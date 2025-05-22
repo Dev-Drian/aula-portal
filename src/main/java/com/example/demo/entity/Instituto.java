@@ -1,6 +1,7 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Entity
@@ -13,6 +14,7 @@ public class Instituto {
     private String sitioWeb;
     
     @OneToMany(mappedBy = "instituto")
+    @JsonIgnore
     private List<Oportunidad> oportunidades;
     
     public Long getId() {

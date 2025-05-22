@@ -454,7 +454,11 @@
         async function loadEstadisticas() {
             try {
                 showLoading();
-                const response = await fetch('/aspirante/estadisticas');
+                const aspiranteId = getAspiranteId();
+                const response = await fetch(`/api/aspirante/estadisticas?aspiranteId=${aspiranteId}`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar estadísticas');
+                }
                 const data = await response.json();
                 
                 document.getElementById('total-inscripciones').textContent = data.totalInscripciones || 0;
@@ -475,15 +479,30 @@
         async function loadInscriptions() {
             try {
                 showLoading();
-                const response = await fetch('/aspirante/inscripciones');
+                const aspiranteId = getAspiranteId();
+                const response = await fetch(`/api/inscripciones/aspirante/${aspiranteId}`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar inscripciones');
+                }
                 const data = await response.json();
                 
-                const inscriptionsList = document.getElementById('inscriptions-list');
-                inscriptionsList.innerHTML = data.map(ins => `
+                const inscriptionsList = document.getElementById('inscripciones-list');
+                if (!data || data.length === 0) {
+                    inscriptionsList.innerHTML = `
+                        <div class="text-center text-gray-500 py-4">
+                            No tienes inscripciones activas
+                        </div>
+                    `;
+                    return;
+                }
+
+                inscriptionsList.innerHTML = data.map(ins => {
+                    const oportunidad = ins.oportunidad;
+                    return `
                     <div class="card border rounded-lg p-4">
                         <div class="flex justify-between items-center">
                             <div>
-                                <h4 class="text-lg font-medium text-gray-900">${ins.titulo}</h4>
+                                <h4 class="text-lg font-medium text-gray-900">${oportunidad.titulo}</h4>
                                 <div class="mt-2 flex items-center space-x-4">
                                     <span class="badge ${
                                         ins.estado === 'APROBADA' ? 'bg-green-100 text-green-800' :
@@ -492,8 +511,11 @@
                                     }">
                                         <i class="fas fa-circle mr-1"></i>${ins.estado}
                                     </span>
+                                    <span class="badge bg-primary-100 text-primary-800">
+                                        <i class="fas fa-tag mr-1"></i>${oportunidad.tipo}
+                                    </span>
                                     <span class="text-sm text-gray-500">
-                                        <i class="far fa-calendar-alt mr-1"></i>${new Date(ins.fecha).toLocaleDateString()}
+                                        <i class="far fa-calendar-alt mr-1"></i>${new Date(ins.fechaInscripcion).toLocaleDateString()}
                                     </span>
                                 </div>
                             </div>
@@ -501,11 +523,17 @@
                                 <i class="fas fa-eye mr-1"></i>Ver detalles
                             </button>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             } catch (error) {
                 console.error('Error al cargar inscripciones:', error);
                 showAlert('Error al cargar inscripciones', 'error');
+                const inscriptionsList = document.getElementById('inscripciones-list');
+                inscriptionsList.innerHTML = `
+                    <div class="text-center text-red-500 py-4">
+                        Error al cargar las inscripciones
+                    </div>
+                `;
             } finally {
                 hideLoading();
             }
@@ -515,7 +543,8 @@
         async function loadSavedOpportunities() {
             try {
                 showLoading();
-                const response = await fetch('/aspirante/oportunidades/guardadas');
+                const aspiranteId = getAspiranteId();
+                const response = await fetch(`/api/aspirante/oportunidades/guardadas?aspiranteId=${aspiranteId}`);
                 const data = await response.json();
                 
                 const savedList = document.getElementById('saved-opportunities');
@@ -535,12 +564,19 @@
                                 </div>
                             </div>
                             <div class="flex space-x-2">
-                                <button onclick="applyOpportunity(${opp.id})" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
-                                    Inscribirse
-                                </button>
-                                <button onclick="removeSavedOpportunity(${opp.id})" class="btn text-red-600 hover:text-red-700">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                ${opp.inscrito ? 
+                                    `<button disabled class="btn bg-gray-400 text-white px-4 py-2 rounded-md cursor-not-allowed">
+                                        Ya Inscrito
+                                    </button>` :
+                                    `<button onclick="applyOpportunity(${opp.id})" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
+                                        Inscribirse
+                                    </button>`
+                                }
+                                ${!opp.inscrito ? 
+                                    `<button onclick="removeSavedOpportunity(${opp.id})" class="btn text-red-600 hover:text-red-700">
+                                        <i class="fas fa-trash"></i>
+                                    </button>` : ''
+                                }
                             </div>
                         </div>
                     </div>
@@ -555,14 +591,20 @@
 
         // Eliminar oportunidad guardada
         async function removeSavedOpportunity(id) {
+            if (!confirm('¿Estás seguro de que deseas eliminar esta oportunidad de tus guardados?')) {
+                return;
+            }
+            
             try {
                 showLoading();
-                const response = await fetch(`/aspirante/oportunidades/${id}/guardar`, {
+                const response = await fetch(`/api/aspirante/oportunidades/${id}/guardar`, {
                     method: 'DELETE'
                 });
                 if (response.ok) {
                     showAlert('Oportunidad eliminada de guardados');
                     loadSavedOpportunities();
+                } else {
+                    throw new Error('Error al eliminar la oportunidad');
                 }
             } catch (error) {
                 console.error('Error al eliminar oportunidad guardada:', error);
@@ -570,6 +612,35 @@
             } finally {
                 hideLoading();
             }
+        }
+
+        // Inscribirse en una oportunidad
+        async function applyOpportunity(id) {
+            try {
+                showLoading();
+                const response = await fetch(`/api/inscripciones/aspirante/${getAspiranteId()}/oportunidad/${id}`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    showAlert('Inscripción realizada con éxito');
+                    loadSavedOpportunities();
+                    loadInscriptions();
+                } else {
+                    throw new Error('Error al inscribirse en la oportunidad');
+                }
+            } catch (error) {
+                console.error('Error al inscribirse:', error);
+                showAlert('Error al inscribirse en la oportunidad', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Función auxiliar para obtener el ID del aspirante
+        function getAspiranteId() {
+            // TODO: Implementar lógica para obtener el ID del aspirante actual
+            // Por ahora retornamos un valor temporal
+            return 1;
         }
 
         // Ver detalles de inscripción
