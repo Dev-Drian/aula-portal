@@ -16,7 +16,6 @@ logs/
 
 ### IntelliJ IDEA ###
 .idea
-
 *.iws
 *.iml
 *.ipr
@@ -34,3 +33,46 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de compilación
+target/
+build/
+out/
+bin/
+
+# Archivos de IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración local
+application-local.properties
+application-dev.properties
+
+# Archivos temporales
+*.tmp
+*.temp
+*.bak
+
+# Archivos de dependencias
+node_modules/
+package-lock.json
+yarn.lock
+
+# Archivos de caché
+.cache/
+.npm/
+.eslintcache
