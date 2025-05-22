@@ -22,7 +22,7 @@ public class AspiranteService {
     public Aspirante getAspiranteById(Long id) {
         return aspiranteRepository.findById(id).orElse(null);
     }
-
+    
     public Aspirante getAspiranteByUsuario(Usuario usuario) {
         return aspiranteRepository.findByUsuario(usuario);
     }

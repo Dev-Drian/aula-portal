@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Buscar Oportunidades - Portal de Oportunidades</title>
+    <title>Oportunidades - Portal de Oportunidades</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -119,16 +119,30 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="/aspirante/dashboard" class="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
+                    <a href="/" class="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
                         <i class="fas fa-graduation-cap mr-2"></i>
                         Portal de Oportunidades
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/aspirante/dashboard" class="text-gray-700 hover:text-primary-600 transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Volver al Dashboard
+                        <i class="fas fa-home mr-1"></i>Dashboard
                     </a>
+                    <div class="relative">
+                        <button id="profile-menu-button" class="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <span id="user-name"></span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                            <a href="/aspirante/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-user-edit mr-2"></i>Editar Perfil
+                            </a>
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -162,10 +176,12 @@
                             <option value="proximamente">Próximamente</option>
                             <option value="cerrada">Cerrada</option>
                         </select>
-                        <select id="filter-sort" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                            <option value="fecha_desc">Más recientes</option>
-                            <option value="fecha_asc">Más antiguas</option>
-                            <option value="cupos_desc">Más cupos disponibles</option>
+                        <select id="filter-area" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="all">Todas las áreas</option>
+                            <option value="ciencias">Ciencias</option>
+                            <option value="ingenieria">Ingeniería</option>
+                            <option value="humanidades">Humanidades</option>
+                            <option value="artes">Artes</option>
                         </select>
                     </div>
                 </div>
@@ -228,12 +244,7 @@
         async function loadOpportunities() {
             try {
                 showLoading();
-                const searchQuery = document.getElementById('search-input').value;
-                const typeFilter = document.getElementById('filter-type').value;
-                const statusFilter = document.getElementById('filter-status').value;
-                const sortBy = document.getElementById('filter-sort').value;
-
-                const response = await fetch(`/aspirante/oportunidades?search=${searchQuery}&type=${typeFilter}&status=${statusFilter}&sort=${sortBy}`);
+                const response = await fetch('/api/oportunidades');
                 const data = await response.json();
                 
                 document.getElementById('total-resultados').textContent = data.length;
@@ -256,11 +267,8 @@
                                     }">
                                         <i class="fas fa-circle mr-1"></i>${opp.estado}
                                     </span>
-                                    <span class="text-sm text-gray-500">
-                                        <i class="far fa-calendar-alt mr-1"></i>${new Date(opp.fecha).toLocaleDateString()}
-                                    </span>
-                                    <span class="text-sm text-gray-500">
-                                        <i class="fas fa-users mr-1"></i>${opp.cuposDisponibles} cupos disponibles
+                                    <span class="badge bg-blue-100 text-blue-800">
+                                        <i class="fas fa-building mr-1"></i>${opp.area}
                                     </span>
                                 </div>
                             </div>
@@ -287,7 +295,7 @@
         async function saveOpportunity(id) {
             try {
                 showLoading();
-                const response = await fetch(`/aspirante/oportunidades/${id}/guardar`, {
+                const response = await fetch(`/api/aspirante/oportunidades/${id}/guardar`, {
                     method: 'POST'
                 });
                 if (response.ok) {
@@ -305,7 +313,7 @@
         async function applyOpportunity(id) {
             try {
                 showLoading();
-                const response = await fetch(`/aspirante/oportunidades/${id}/inscribir`, {
+                const response = await fetch(`/api/aspirante/oportunidades/${id}/inscribir`, {
                     method: 'POST'
                 });
                 if (response.ok) {
@@ -335,7 +343,21 @@
 
             document.getElementById('filter-type').addEventListener('change', loadOpportunities);
             document.getElementById('filter-status').addEventListener('change', loadOpportunities);
-            document.getElementById('filter-sort').addEventListener('change', loadOpportunities);
+            document.getElementById('filter-area').addEventListener('change', loadOpportunities);
+
+            // Event listener para el menú de perfil
+            document.getElementById('profile-menu-button').addEventListener('click', () => {
+                document.getElementById('profile-menu').classList.toggle('hidden');
+            });
+
+            // Cerrar menú de perfil al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('profile-menu');
+                const button = document.getElementById('profile-menu-button');
+                if (!menu.contains(e.target) && !button.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
         });
     </script>
 </body>

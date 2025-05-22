@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/oportunidades")
+@RequestMapping("/api/oportunidades")
 public class OportunidadController {
 
     private final OportunidadService oportunidadService;

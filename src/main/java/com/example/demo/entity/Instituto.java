@@ -12,7 +12,7 @@ public class Instituto {
     private String nombreInstitucion;
     private String sitioWeb;
     
-    @ManyToMany(mappedBy = "institutos")
+    @OneToMany(mappedBy = "instituto")
     private List<Oportunidad> oportunidades;
     
     public Long getId() {

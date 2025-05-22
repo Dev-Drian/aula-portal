@@ -1,6 +1,5 @@
 package com.example.demo.entity;
 import jakarta.persistence.*;
-import java.util.List;
 
 
 @Entity
@@ -16,13 +15,9 @@ public class Oportunidad {
     private String estado;
     private String shippingId;
     
-    @ManyToMany
-    @JoinTable(
-        name = "oportunidad_instituto",
-        joinColumns = @JoinColumn(name = "oportunidad_id"),
-        inverseJoinColumns = @JoinColumn(name = "instituto_id")
-    )
-    private List<Instituto> institutos;
+    @ManyToOne
+    @JoinColumn(name = "instituto_id")
+    private Instituto instituto;
     
     public Long getId() {
         return id;
@@ -52,8 +47,8 @@ public class Oportunidad {
         return shippingId;
     }
     
-    public List<Instituto> getInstitutos() {
-        return institutos;
+    public Instituto getInstituto() {
+        return instituto;
     }
     
     public void setId(Long id) {
@@ -84,21 +79,21 @@ public class Oportunidad {
         this.shippingId = shippingId;
     }
     
-    public void setInstitutos(List<Instituto> institutos) {
-        this.institutos = institutos;
+    public void setInstituto(Instituto instituto) {
+        this.instituto = instituto;
     }
     
     public Oportunidad() {
     }
     
-    public Oportunidad(String titulo, String descripcion, String tipo, String area, String estado, String shippingId, List<Instituto> institutos) {
+    public Oportunidad(String titulo, String descripcion, String tipo, String area, String estado, String shippingId, Instituto instituto) {
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.tipo = tipo;
         this.area = area;
         this.estado = estado;
         this.shippingId = shippingId;
-        this.institutos = institutos;
+        this.instituto = instituto;
     }
     
     @Override
@@ -111,7 +106,7 @@ public class Oportunidad {
                 ", area='" + area + '\'' +
                 ", estado='" + estado + '\'' +
                 ", shippingId='" + shippingId + '\'' +
-                ", institutos=" + institutos +
+                ", instituto=" + instituto +
                 '}';
     }
 }

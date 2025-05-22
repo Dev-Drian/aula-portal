@@ -37,4 +37,9 @@ public class LandingController {
     public String aspiranteDashboard() {
         return "aspirante/dashboard";
     }
+
+    @GetMapping("/aspirante/oportunidades")
+    public String aspiranteOportunidades() {
+        return "aspirante/oportunidades";
+    }
 } 
