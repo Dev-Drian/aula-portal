@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Buscar Oportunidades - Portal de Oportunidades</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        /* Estilos base */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+        }
+        .loading.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Estilos de tarjetas */
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Estilos de botones */
+        .btn {
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Estilos de inputs */
+        .input-focus {
+            transition: all 0.2s ease;
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Estilos de badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Estilos de alertas */
+        .alert {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/aspirante/dashboard" class="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
+                        <i class="fas fa-graduation-cap mr-2"></i>
+                        Portal de Oportunidades
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/aspirante/dashboard" class="text-gray-700 hover:text-primary-600 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-16">
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Alertas -->
+            <div id="alert-container" class="mb-4"></div>
+
+            <!-- Filtros -->
+            <div class="card bg-white shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="relative">
+                            <input type="text" id="search-input" 
+                                placeholder="Buscar oportunidades..." 
+                                class="input-focus w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 pl-10">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <select id="filter-type" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="all">Todas las oportunidades</option>
+                            <option value="becas">Becas</option>
+                            <option value="cursos">Cursos</option>
+                            <option value="patrocinios">Patrocinios</option>
+                        </select>
+                        <select id="filter-status" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="all">Todos los estados</option>
+                            <option value="abierta">Abierta</option>
+                            <option value="proximamente">Próximamente</option>
+                            <option value="cerrada">Cerrada</option>
+                        </select>
+                        <select id="filter-sort" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="fecha_desc">Más recientes</option>
+                            <option value="fecha_asc">Más antiguas</option>
+                            <option value="cupos_desc">Más cupos disponibles</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resultados -->
+            <div class="card bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">
+                            <i class="fas fa-briefcase mr-2 text-primary-600"></i>Oportunidades Disponibles
+                        </h3>
+                        <span class="badge bg-primary-100 text-primary-800">
+                            <i class="fas fa-list mr-1"></i>
+                            <span id="total-resultados">0</span> resultados
+                        </span>
+                    </div>
+                    <div id="opportunities-list" class="space-y-4">
+                        <!-- Las oportunidades se cargarán dinámicamente aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/auth.js}"></script>
+    <script>
+        // Funciones de utilidad
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert p-4 mb-4 rounded-md ${
+                type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`;
+            alert.innerHTML = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Verificar autenticación
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (isLoggedIn !== 'true' || userRole !== 'ASPIRANTE') {
+                window.location.href = '/auth/login';
+            }
+        }
+
+        // Cargar oportunidades
+        async function loadOpportunities() {
+            try {
+                showLoading();
+                const searchQuery = document.getElementById('search-input').value;
+                const typeFilter = document.getElementById('filter-type').value;
+                const statusFilter = document.getElementById('filter-status').value;
+                const sortBy = document.getElementById('filter-sort').value;
+
+                const response = await fetch(`/aspirante/oportunidades?search=${searchQuery}&type=${typeFilter}&status=${statusFilter}&sort=${sortBy}`);
+                const data = await response.json();
+                
+                document.getElementById('total-resultados').textContent = data.length;
+                
+                const opportunitiesList = document.getElementById('opportunities-list');
+                opportunitiesList.innerHTML = data.map(opp => `
+                    <div class="card border rounded-lg p-4">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h4 class="text-lg font-medium text-gray-900">${opp.titulo}</h4>
+                                <p class="text-gray-600 mt-1">${opp.descripcion}</p>
+                                <div class="mt-2 flex items-center space-x-4">
+                                    <span class="badge bg-primary-100 text-primary-800">
+                                        <i class="fas fa-tag mr-1"></i>${opp.tipo}
+                                    </span>
+                                    <span class="badge ${
+                                        opp.estado === 'ABIERTA' ? 'bg-green-100 text-green-800' :
+                                        opp.estado === 'PROXIMAMENTE' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'
+                                    }">
+                                        <i class="fas fa-circle mr-1"></i>${opp.estado}
+                                    </span>
+                                    <span class="text-sm text-gray-500">
+                                        <i class="far fa-calendar-alt mr-1"></i>${new Date(opp.fecha).toLocaleDateString()}
+                                    </span>
+                                    <span class="text-sm text-gray-500">
+                                        <i class="fas fa-users mr-1"></i>${opp.cuposDisponibles} cupos disponibles
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2 ml-4">
+                                <button onclick="saveOpportunity(${opp.id})" class="btn text-gray-600 hover:text-primary-600" title="Guardar">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                                <button onclick="applyOpportunity(${opp.id})" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
+                                    Inscribirse
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error al cargar oportunidades:', error);
+                showAlert('Error al cargar oportunidades', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Guardar oportunidad
+        async function saveOpportunity(id) {
+            try {
+                showLoading();
+                const response = await fetch(`/aspirante/oportunidades/${id}/guardar`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    showAlert('Oportunidad guardada exitosamente');
+                }
+            } catch (error) {
+                console.error('Error al guardar oportunidad:', error);
+                showAlert('Error al guardar oportunidad', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Inscribirse en oportunidad
+        async function applyOpportunity(id) {
+            try {
+                showLoading();
+                const response = await fetch(`/aspirante/oportunidades/${id}/inscribir`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    showAlert('Inscripción exitosa');
+                }
+            } catch (error) {
+                console.error('Error al inscribirse:', error);
+                showAlert('Error al inscribirse', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadOpportunities();
+
+            // Event listeners para filtros
+            let searchTimeout;
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    loadOpportunities();
+                }, 300);
+            });
+
+            document.getElementById('filter-type').addEventListener('change', loadOpportunities);
+            document.getElementById('filter-status').addEventListener('change', loadOpportunities);
+            document.getElementById('filter-sort').addEventListener('change', loadOpportunities);
+        });
+    </script>
+</body>
+</html> 
