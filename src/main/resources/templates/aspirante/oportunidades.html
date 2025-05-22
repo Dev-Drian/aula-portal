@@ -210,6 +210,8 @@
     <!-- Scripts -->
     <script th:src="@{/js/auth.js}"></script>
     <script>
+        let currentAspiranteId = null;
+
         // Funciones de utilidad
         function showLoading() {
             document.getElementById('loading').classList.add('active');
@@ -240,12 +242,43 @@
             }
         }
 
+        // Cargar perfil del aspirante
+        async function loadAspiranteProfile() {
+            try {
+                const response = await fetch('/api/aspirante/perfil');
+                if (response.ok) {
+                    const data = await response.json();
+                    currentAspiranteId = data.id;
+                    return data.id;
+                }
+                throw new Error('Error al cargar perfil');
+            } catch (error) {
+                console.error('Error al cargar perfil:', error);
+                showAlert('Error al cargar perfil', 'error');
+                return null;
+            }
+        }
+
         // Cargar oportunidades
         async function loadOpportunities() {
             try {
                 showLoading();
+                
+                // Asegurarnos de tener el ID del aspirante
+                if (!currentAspiranteId) {
+                    currentAspiranteId = await loadAspiranteProfile();
+                    if (!currentAspiranteId) {
+                        throw new Error('No se pudo obtener el ID del aspirante');
+                    }
+                }
+
                 const response = await fetch('/api/oportunidades');
                 const data = await response.json();
+                
+                // Obtener oportunidades guardadas
+                const savedResponse = await fetch(`/api/aspirante/oportunidades/guardadas?aspiranteId=${currentAspiranteId}`);
+                const savedData = await savedResponse.json();
+                const savedIds = new Set(savedData.map(opp => opp.id));
                 
                 document.getElementById('total-resultados').textContent = data.length;
                 
@@ -254,7 +287,12 @@
                     <div class="card border rounded-lg p-4">
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
-                                <h4 class="text-lg font-medium text-gray-900">${opp.titulo}</h4>
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-lg font-medium text-gray-900">${opp.titulo}</h4>
+                                    <button onclick="saveOpportunity(${opp.id})" class="btn ${savedIds.has(opp.id) ? 'text-primary-600' : 'text-gray-600 hover:text-primary-600'}" title="${savedIds.has(opp.id) ? 'Quitar de guardados' : 'Guardar'}">
+                                        <i class="${savedIds.has(opp.id) ? 'fas' : 'far'} fa-bookmark"></i>
+                                    </button>
+                                </div>
                                 <p class="text-gray-600 mt-1">${opp.descripcion}</p>
                                 <div class="mt-2 flex items-center space-x-4">
                                     <span class="badge bg-primary-100 text-primary-800">
@@ -273,9 +311,6 @@
                                 </div>
                             </div>
                             <div class="flex space-x-2 ml-4">
-                                <button onclick="saveOpportunity(${opp.id})" class="btn text-gray-600 hover:text-primary-600" title="Guardar">
-                                    <i class="far fa-bookmark"></i>
-                                </button>
                                 <button onclick="applyOpportunity(${opp.id})" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
                                     Inscribirse
                                 </button>
@@ -294,12 +329,24 @@
         // Guardar oportunidad
         async function saveOpportunity(id) {
             try {
+                if (!currentAspiranteId) {
+                    currentAspiranteId = await loadAspiranteProfile();
+                    if (!currentAspiranteId) {
+                        throw new Error('No se pudo obtener el ID del aspirante');
+                    }
+                }
+
                 showLoading();
-                const response = await fetch(`/api/aspirante/oportunidades/${id}/guardar`, {
-                    method: 'POST'
+                const button = event.currentTarget;
+                const isSaved = button.classList.contains('text-primary-600');
+                
+                const response = await fetch(`/api/aspirante/oportunidades/${id}/guardar?aspiranteId=${currentAspiranteId}`, {
+                    method: isSaved ? 'DELETE' : 'POST'
                 });
+                
                 if (response.ok) {
-                    showAlert('Oportunidad guardada exitosamente');
+                    showAlert(isSaved ? 'Oportunidad eliminada de guardados' : 'Oportunidad guardada exitosamente');
+                    loadOpportunities(); // Recargar para actualizar el estado
                 }
             } catch (error) {
                 console.error('Error al guardar oportunidad:', error);
@@ -312,12 +359,23 @@
         // Inscribirse en oportunidad
         async function applyOpportunity(id) {
             try {
+                if (!currentAspiranteId) {
+                    currentAspiranteId = await loadAspiranteProfile();
+                    if (!currentAspiranteId) {
+                        throw new Error('No se pudo obtener el ID del aspirante');
+                    }
+                }
+
                 showLoading();
-                const response = await fetch(`/api/aspirante/oportunidades/${id}/inscribir`, {
+                const response = await fetch(`/api/inscripciones/aspirante/${currentAspiranteId}/oportunidad/${id}`, {
                     method: 'POST'
                 });
+                
                 if (response.ok) {
                     showAlert('Inscripción exitosa');
+                    loadOpportunities(); // Recargar para actualizar el estado
+                } else {
+                    throw new Error('Error al inscribirse');
                 }
             } catch (error) {
                 console.error('Error al inscribirse:', error);
@@ -328,8 +386,9 @@
         }
 
         // Inicialización
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             checkAuth();
+            await loadAspiranteProfile(); // Cargar el perfil primero
             loadOpportunities();
 
             // Event listeners para filtros
