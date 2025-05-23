@@ -1,69 +1,41 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
+@Table(name = "institutos")
 public class Instituto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    private String nombreInstitucion;
+
+    @Column(nullable = false)
+    private String nombre;
+
+    @OneToOne
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
+
+    @Column
+    private String descripcion;
+
+    @Column
+    private String direccion;
+
+    @Column
+    private String telefono;
+
+    @Column
+    private String email;
+
+    @Column
     private String sitioWeb;
-    
-    @OneToMany(mappedBy = "instituto")
-    @JsonIgnore
-    private List<Oportunidad> oportunidades;
-    
-    public Long getId() {
-        return id;
-    }
-    
-    public String getNombreInstitucion() {
-        return nombreInstitucion;
-    }
-    
-    public String getSitioWeb() {
-        return sitioWeb;
-    }
-    
-    public List<Oportunidad> getOportunidades() {
-        return oportunidades;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public void setNombreInstitucion(String nombreInstitucion) {
-        this.nombreInstitucion = nombreInstitucion;
-    }
-    
-    public void setSitioWeb(String sitioWeb) {
-        this.sitioWeb = sitioWeb;
-    }
-    
-    public void setOportunidades(List<Oportunidad> oportunidades) {
-        this.oportunidades = oportunidades;
-    }
-    
-    public Instituto() {
-    }
-    
-    public Instituto(String nombreInstituto, String sitioWeb) {
-        this.nombreInstitucion = nombreInstituto;
-        this.sitioWeb = sitioWeb;
-    }
-    
-    @Override
-    public String toString() {
-        return "Instituto{" +
-                "id=" + id +
-                ", nombreInstituto='" + nombreInstitucion + '\'' +
-                ", sitioWeb='" + sitioWeb + '\'' +
-                ", oportunidades=" + oportunidades +
-                '}';
-    }
 }

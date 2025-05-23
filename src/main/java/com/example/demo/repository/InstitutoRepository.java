@@ -1,7 +1,11 @@
 package com.example.demo.repository;
 
-import  com.example.demo.entity.Instituto;
+import com.example.demo.entity.Instituto;
+import com.example.demo.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface InstitutoRepository extends JpaRepository<Instituto, Long>{
+@Repository
+public interface InstitutoRepository extends JpaRepository<Instituto, Long> {
+    Instituto findByUsuario(Usuario usuario);
 }
