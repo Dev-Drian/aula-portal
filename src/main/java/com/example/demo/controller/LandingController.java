@@ -42,4 +42,9 @@ public class LandingController {
     public String aspiranteOportunidades() {
         return "aspirante/oportunidades";
     }
+
+    @GetMapping("/aspirante/inscripciones")
+    public String aspiranteInscripciones() {
+        return "aspirante/inscripciones";
+    }
 } 

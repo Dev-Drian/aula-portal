@@ -5,6 +5,7 @@ import com.example.demo.entity.Aspirante;
 import com.example.demo.entity.Oportunidad;
 import com.example.demo.repository.OportunidadGuardadaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -29,6 +30,7 @@ public class OportunidadGuardadaService {
         return oportunidadGuardadaRepository.save(nueva);
     }
 
+    @Transactional
     public void eliminarOportunidadGuardada(Aspirante aspirante, Oportunidad oportunidad) {
         oportunidadGuardadaRepository.deleteByAspiranteAndOportunidad(aspirante, oportunidad);
     }

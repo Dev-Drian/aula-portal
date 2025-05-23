@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mis Inscripciones - Portal de Oportunidades</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        /* Estilos base */
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+        }
+        .loading.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Estilos de tarjetas */
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Estilos de alertas */
+        .alert {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
+                        <i class="fas fa-graduation-cap mr-2"></i>
+                        Portal de Oportunidades
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/aspirante/dashboard" class="text-gray-700 hover:text-primary-600 transition-colors">
+                        <i class="fas fa-home mr-1"></i>Dashboard
+                    </a>
+                    <div class="relative">
+                        <button id="profile-menu-button" class="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <span id="user-name"></span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                            <a href="/aspirante/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-user-edit mr-2"></i>Editar Perfil
+                            </a>
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-16">
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Alertas -->
+            <div id="alert-container" class="mb-4"></div>
+
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="card bg-white shadow rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-primary-100 text-primary-600">
+                            <i class="fas fa-clipboard-list text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-gray-900">Total Inscripciones</h3>
+                            <p class="text-2xl font-bold text-primary-600" id="total-inscripciones">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-white shadow rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-600">
+                            <i class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-gray-900">Aprobadas</h3>
+                            <p class="text-2xl font-bold text-green-600" id="total-aprobadas">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-white shadow rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                            <i class="fas fa-clock text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-gray-900">Pendientes</h3>
+                            <p class="text-2xl font-bold text-yellow-600" id="total-pendientes">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Inscripciones -->
+            <div class="card bg-white shadow rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">
+                            <i class="fas fa-clipboard-list mr-2 text-primary-600"></i>Mis Inscripciones
+                        </h3>
+                        <div class="flex space-x-2">
+                            <span class="badge bg-primary-100 text-primary-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                <span id="inscripciones-aprobadas">0</span> Aprobadas
+                            </span>
+                            <span class="badge bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1"></i>
+                                <span id="inscripciones-pendientes">0</span> Pendientes
+                            </span>
+                        </div>
+                    </div>
+                    <div id="inscripciones-list" class="space-y-4">
+                        <!-- Las inscripciones se cargarán dinámicamente aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/auth.js}"></script>
+    <script>
+        let currentAspiranteId = null;
+
+        // Funciones de utilidad
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert p-4 mb-4 rounded-md ${
+                type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`;
+            alert.innerHTML = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Verificar autenticación
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (isLoggedIn !== 'true' || userRole !== 'ASPIRANTE') {
+                window.location.href = '/auth/login';
+            }
+        }
+
+        // Cargar perfil del aspirante
+        async function loadAspiranteProfile() {
+            try {
+                const response = await fetch('/api/aspirante/perfil');
+                if (response.ok) {
+                    const data = await response.json();
+                    currentAspiranteId = data.id;
+                    document.getElementById('user-name').textContent = data.nombre || 'Usuario';
+                    return data.id;
+                }
+                throw new Error('Error al cargar perfil');
+            } catch (error) {
+                console.error('Error al cargar perfil:', error);
+                showAlert('Error al cargar perfil', 'error');
+                return null;
+            }
+        }
+
+        // Cargar estadísticas
+        async function loadEstadisticas() {
+            try {
+                showLoading();
+                if (!currentAspiranteId) {
+                    currentAspiranteId = await loadAspiranteProfile();
+                    if (!currentAspiranteId) {
+                        throw new Error('No se pudo obtener el ID del aspirante');
+                    }
+                }
+
+                const response = await fetch(`/api/aspirante/${currentAspiranteId}/estadisticas`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar estadísticas');
+                }
+                const data = await response.json();
+                
+                // Actualizar contadores
+                document.getElementById('total-inscripciones').textContent = data.totalInscripciones || 0;
+                document.getElementById('total-aprobadas').textContent = data.totalAprobadas || 0;
+                document.getElementById('total-pendientes').textContent = data.totalPendientes || 0;
+                document.getElementById('inscripciones-aprobadas').textContent = data.totalAprobadas || 0;
+                document.getElementById('inscripciones-pendientes').textContent = data.totalPendientes || 0;
+
+                // Actualizar badges
+                const badgesContainer = document.querySelector('.flex.space-x-2');
+                if (badgesContainer) {
+                    badgesContainer.innerHTML = `
+                        <span class="badge bg-primary-100 text-primary-800">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            <span id="inscripciones-aprobadas">${data.totalAprobadas || 0}</span> Aprobadas
+                        </span>
+                        <span class="badge bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span id="inscripciones-pendientes">${data.totalPendientes || 0}</span> Pendientes
+                        </span>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al cargar estadísticas:', error);
+                showAlert('Error al cargar estadísticas', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Cargar inscripciones
+        async function loadInscriptions() {
+            try {
+                showLoading();
+                const response = await fetch(`/api/inscripciones/aspirante/${currentAspiranteId}`);
+                if (!response.ok) {
+                    throw new Error('Error al cargar inscripciones');
+                }
+                const data = await response.json();
+                
+                const inscriptionsList = document.getElementById('inscripciones-list');
+                if (!data || data.length === 0) {
+                    inscriptionsList.innerHTML = `
+                        <div class="text-center text-gray-500 py-4">
+                            No tienes inscripciones activas
+                        </div>
+                    `;
+                    return;
+                }
+
+                inscriptionsList.innerHTML = data.map(ins => {
+                    const oportunidad = ins.oportunidad;
+                    const estadoColor = {
+                        'APROBADA': 'bg-green-100 text-green-800 border-green-500',
+                        'PENDIENTE': 'bg-yellow-100 text-yellow-800 border-yellow-500',
+                        'RECHAZADA': 'bg-red-100 text-red-800 border-red-500'
+                    }[ins.estado] || 'bg-gray-100 text-gray-800 border-gray-500';
+
+                    return `
+                    <div class="card bg-white border-l-4 ${estadoColor.split(' ')[2]} rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+                        <div class="p-4">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-2">
+                                        <h4 class="text-lg font-semibold text-gray-900 truncate">${oportunidad.titulo}</h4>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${estadoColor}">
+                                            <i class="fas fa-circle mr-1"></i>${ins.estado}
+                                        </span>
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-600 line-clamp-2">${oportunidad.descripcion}</p>
+                                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                                            <i class="fas fa-tag mr-1"></i>${oportunidad.tipo}
+                                        </span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            <i class="far fa-calendar-alt mr-1"></i>${new Date(ins.fechaInscripcion).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                </div>
+                                <button onclick="viewInscriptionDetails(${ins.id})" class="btn text-primary-600 hover:text-primary-700 transition-colors">
+                                    <i class="fas fa-eye mr-1"></i>Ver detalles
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (error) {
+                console.error('Error al cargar inscripciones:', error);
+                showAlert('Error al cargar inscripciones', 'error');
+                const inscriptionsList = document.getElementById('inscripciones-list');
+                inscriptionsList.innerHTML = `
+                    <div class="text-center text-red-500 py-4">
+                        Error al cargar las inscripciones
+                    </div>
+                `;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Ver detalles de inscripción
+        function viewInscriptionDetails(id) {
+            // Implementar vista de detalles
+            alert('Funcionalidad en desarrollo');
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            checkAuth();
+            await loadAspiranteProfile();
+            loadEstadisticas();
+            loadInscriptions();
+
+            // Event listener para el menú de perfil
+            document.getElementById('profile-menu-button').addEventListener('click', () => {
+                document.getElementById('profile-menu').classList.toggle('hidden');
+            });
+
+            // Cerrar menú de perfil al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('profile-menu');
+                const button = document.getElementById('profile-menu-button');
+                if (!menu.contains(e.target) && !button.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -165,15 +165,15 @@
             <div id="alert-container" class="mb-4"></div>
 
             <!-- Estadísticas -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div class="card bg-white shadow rounded-lg p-4">
                     <div class="flex items-center">
                         <div class="p-3 rounded-full bg-primary-100 text-primary-600">
-                            <i class="fas fa-clipboard-list text-2xl"></i>
+                            <i class="fas fa-bookmark text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Inscripciones</h3>
-                            <p class="text-2xl font-bold text-primary-600" id="total-inscripciones">0</p>
+                            <h3 class="text-lg font-medium text-gray-900">Oportunidades Guardadas</h3>
+                            <p class="text-2xl font-bold text-primary-600" id="total-guardadas">0</p>
                         </div>
                     </div>
                 </div>
@@ -183,19 +183,8 @@
                             <i class="fas fa-check-circle text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Aprobadas</h3>
+                            <h3 class="text-lg font-medium text-gray-900">Inscripciones Aprobadas</h3>
                             <p class="text-2xl font-bold text-green-600" id="total-aprobadas">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card bg-white shadow rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                            <i class="fas fa-bookmark text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-medium text-gray-900">Guardadas</h3>
-                            <p class="text-2xl font-bold text-yellow-600" id="total-guardadas">0</p>
                         </div>
                     </div>
                 </div>
@@ -233,30 +222,6 @@
                             <i class="fas fa-clipboard-list mr-2"></i>
                             <span>Ver Mis Inscripciones</span>
                         </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mis Inscripciones Section -->
-            <div class="card bg-white shadow rounded-lg mt-6">
-                <div class="px-4 py-5 sm:p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">
-                            <i class="fas fa-clipboard-list mr-2 text-primary-600"></i>Mis Inscripciones
-                        </h3>
-                        <div class="flex space-x-2">
-                            <span class="badge bg-primary-100 text-primary-800">
-                                <i class="fas fa-check-circle mr-1"></i>
-                                <span id="inscripciones-aprobadas">0</span> Aprobadas
-                            </span>
-                            <span class="badge bg-yellow-100 text-yellow-800">
-                                <i class="fas fa-clock mr-1"></i>
-                                <span id="inscripciones-pendientes">0</span> Pendientes
-                            </span>
-                        </div>
-                    </div>
-                    <div id="inscripciones-list" class="space-y-4">
-                        <!-- Las inscripciones se cargarán dinámicamente aquí -->
                     </div>
                 </div>
             </div>
@@ -455,85 +420,18 @@
             try {
                 showLoading();
                 const aspiranteId = getAspiranteId();
-                const response = await fetch(`/api/aspirante/estadisticas?aspiranteId=${aspiranteId}`);
+                const response = await fetch(`/api/aspirante/${aspiranteId}/estadisticas`);
                 if (!response.ok) {
                     throw new Error('Error al cargar estadísticas');
                 }
                 const data = await response.json();
                 
-                document.getElementById('total-inscripciones').textContent = data.totalInscripciones || 0;
-                document.getElementById('total-aprobadas').textContent = data.totalAprobadas || 0;
                 document.getElementById('total-guardadas').textContent = data.totalGuardadas || 0;
-                document.getElementById('inscripciones-aprobadas').textContent = data.totalAprobadas || 0;
-                document.getElementById('inscripciones-pendientes').textContent = data.totalPendientes || 0;
+                document.getElementById('total-aprobadas').textContent = data.totalAprobadas || 0;
                 document.getElementById('total-oportunidades-guardadas').textContent = data.totalGuardadas || 0;
             } catch (error) {
                 console.error('Error al cargar estadísticas:', error);
                 showAlert('Error al cargar estadísticas', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Cargar inscripciones
-        async function loadInscriptions() {
-            try {
-                showLoading();
-                const aspiranteId = getAspiranteId();
-                const response = await fetch(`/api/inscripciones/aspirante/${aspiranteId}`);
-                if (!response.ok) {
-                    throw new Error('Error al cargar inscripciones');
-                }
-                const data = await response.json();
-                
-                const inscriptionsList = document.getElementById('inscripciones-list');
-                if (!data || data.length === 0) {
-                    inscriptionsList.innerHTML = `
-                        <div class="text-center text-gray-500 py-4">
-                            No tienes inscripciones activas
-                        </div>
-                    `;
-                    return;
-                }
-
-                inscriptionsList.innerHTML = data.map(ins => {
-                    const oportunidad = ins.oportunidad;
-                    return `
-                    <div class="card border rounded-lg p-4">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="text-lg font-medium text-gray-900">${oportunidad.titulo}</h4>
-                                <div class="mt-2 flex items-center space-x-4">
-                                    <span class="badge ${
-                                        ins.estado === 'APROBADA' ? 'bg-green-100 text-green-800' :
-                                        ins.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'
-                                    }">
-                                        <i class="fas fa-circle mr-1"></i>${ins.estado}
-                                    </span>
-                                    <span class="badge bg-primary-100 text-primary-800">
-                                        <i class="fas fa-tag mr-1"></i>${oportunidad.tipo}
-                                    </span>
-                                    <span class="text-sm text-gray-500">
-                                        <i class="far fa-calendar-alt mr-1"></i>${new Date(ins.fechaInscripcion).toLocaleDateString()}
-                                    </span>
-                                </div>
-                            </div>
-                            <button onclick="viewInscriptionDetails(${ins.id})" class="btn text-primary-600 hover:text-primary-700">
-                                <i class="fas fa-eye mr-1"></i>Ver detalles
-                            </button>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (error) {
-                console.error('Error al cargar inscripciones:', error);
-                showAlert('Error al cargar inscripciones', 'error');
-                const inscriptionsList = document.getElementById('inscripciones-list');
-                inscriptionsList.innerHTML = `
-                    <div class="text-center text-red-500 py-4">
-                        Error al cargar las inscripciones
-                    </div>
-                `;
             } finally {
                 hideLoading();
             }
@@ -548,35 +446,50 @@
                 const data = await response.json();
                 
                 const savedList = document.getElementById('saved-opportunities');
+                if (!data || data.length === 0) {
+                    savedList.innerHTML = `
+                        <div class="text-center text-gray-500 py-4">
+                            No tienes oportunidades guardadas
+                        </div>
+                    `;
+                    return;
+                }
+
                 savedList.innerHTML = data.map(opp => `
-                    <div class="card border rounded-lg p-4">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h4 class="text-lg font-medium text-gray-900">${opp.titulo}</h4>
-                                <p class="text-gray-600 mt-1">${opp.descripcion}</p>
-                                <div class="mt-2 flex items-center space-x-4">
-                                    <span class="badge bg-primary-100 text-primary-800">
+                    <div class="card bg-white border-l-4 border-primary-500 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+                        <div class="p-4">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-2">
+                                        <h4 class="text-lg font-semibold text-gray-900 truncate">${opp.titulo}</h4>
+                                        ${opp.inscrito ? 
+                                            `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle mr-1"></i>Inscrito
+                                            </span>` : ''
+                                        }
+                                    </div>
+                                    <p class="mt-1 text-sm text-gray-600 line-clamp-2">${opp.descripcion}</p>
+                                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                                         <i class="fas fa-tag mr-1"></i>${opp.tipo}
                                     </span>
-                                    <span class="text-sm text-gray-500">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                         <i class="far fa-calendar-alt mr-1"></i>${new Date(opp.fecha).toLocaleDateString()}
                                     </span>
                                 </div>
                             </div>
-                            <div class="flex space-x-2">
-                                ${opp.inscrito ? 
-                                    `<button disabled class="btn bg-gray-400 text-white px-4 py-2 rounded-md cursor-not-allowed">
-                                        Ya Inscrito
-                                    </button>` :
-                                    `<button onclick="applyOpportunity(${opp.id})" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
-                                        Inscribirse
-                                    </button>`
-                                }
-                                ${!opp.inscrito ? 
-                                    `<button onclick="removeSavedOpportunity(${opp.id})" class="btn text-red-600 hover:text-red-700">
-                                        <i class="fas fa-trash"></i>
-                                    </button>` : ''
-                                }
+                                <div class="ml-4 flex flex-col items-end space-y-2">
+                                    ${!opp.inscrito ? 
+                                        `<button onclick="applyOpportunity(${opp.id})" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors text-sm">
+                                            <i class="fas fa-paper-plane mr-1"></i>Inscribirse
+                                        </button>` : ''
+                                    }
+                                    ${!opp.inscrito ? 
+                                        `<button onclick="removeSavedOpportunity(${opp.id})" class="btn text-red-600 hover:text-red-700 transition-colors text-sm">
+                                            <i class="fas fa-trash mr-1"></i>Eliminar
+                                        </button>` : ''
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -624,7 +537,6 @@
                 if (response.ok) {
                     showAlert('Inscripción realizada con éxito');
                     loadSavedOpportunities();
-                    loadInscriptions();
                 } else {
                     throw new Error('Error al inscribirse en la oportunidad');
                 }
@@ -643,18 +555,11 @@
             return 1;
         }
 
-        // Ver detalles de inscripción
-        function viewInscriptionDetails(id) {
-            // Implementar vista de detalles
-            alert('Funcionalidad en desarrollo');
-        }
-
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             loadUserData();
             loadEstadisticas();
-            loadInscriptions();
             loadSavedOpportunities();
 
             // Event listener para el menú de perfil
