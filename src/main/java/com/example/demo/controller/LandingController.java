@@ -1,14 +1,24 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.Oportunidad;
+import com.example.demo.service.OportunidadService;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/")
 public class LandingController {
 
-    @GetMapping
+  private final OportunidadService oportunidadService;
+
+  public LandingController(OportunidadService oportunidadService) {
+    this.oportunidadService = oportunidadService;
+  }
+
+  @GetMapping
     public String landing() {
         return "landing";
     }
@@ -57,4 +67,14 @@ public class LandingController {
     public String aspiranteInscripciones() {
         return "aspirante/inscripciones";
     }
-} 
+
+    @GetMapping("/oportunidad/{id}")
+    public String verOportunidad(@PathVariable Long id, Model model) {
+        Oportunidad oportunidad = oportunidadService.getOportunidadById(id);
+        if (oportunidad == null) {
+            return "redirect:/";
+        }
+        model.addAttribute("oportunidad", oportunidad);
+        return "oportunidad/detalle";
+    }
+}

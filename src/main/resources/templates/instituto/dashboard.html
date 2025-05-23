@@ -411,8 +411,15 @@
             try {
                 showLoading();
                 const userId = localStorage.getItem('userId');
-                const response = await fetch(`/api/instituto/oportunidades?institutoId=${userId}`);
-                const data = await response.json();
+                const response = await fetch(`/api/instituto/perfil?userId=${userId}`);
+                if (!response.ok) throw new Error('Error al obtener datos del instituto');
+                
+                const instituto = await response.json();
+                const oportunidadesResponse = await fetch(`/api/instituto/oportunidades?institutoId=${instituto.id}`);
+                if (!oportunidadesResponse.ok) throw new Error('Error al cargar oportunidades');
+                
+                const data = await oportunidadesResponse.json();
+                
                 
                 const latestList = document.getElementById('latest-opportunities');
                 if (!data || data.length === 0) {
