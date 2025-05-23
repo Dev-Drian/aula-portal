@@ -33,6 +33,16 @@ public class LandingController {
         return "instituto/dashboard";
     }
 
+    @GetMapping("/instituto/oportunidades")
+    public String institutoOportunidades() {
+        return "instituto/oportunidades";
+    }
+
+    @GetMapping("/instituto/oportunidades/nueva")
+    public String institutoNuevaOportunidad() {
+        return "instituto/nueva-oportunidad";
+    }
+
     @GetMapping("/aspirante/dashboard")
     public String aspiranteDashboard() {
         return "aspirante/dashboard";

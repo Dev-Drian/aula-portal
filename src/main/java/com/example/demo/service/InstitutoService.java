@@ -1,20 +1,24 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Instituto;
-import com.example.demo.model.Usuario;
+import com.example.demo.entity.Usuario;
 import com.example.demo.repository.InstitutoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
 public class InstitutoService {
 
-    @Autowired
-    private InstitutoRepository institutoRepository;
+    private final InstitutoRepository institutoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private UsuarioService usuarioService;
+    public InstitutoService(InstitutoRepository institutoRepository, UsuarioRepository usuarioRepository) {
+        this.institutoRepository = institutoRepository;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     public List<Instituto> getAllInstitutos() {
         return institutoRepository.findAll();
@@ -24,30 +28,21 @@ public class InstitutoService {
         return institutoRepository.findById(id).orElse(null);
     }
 
+    public Instituto getInstitutoByUserId(Long userId) {
+        Usuario usuario = usuarioRepository.findById(userId).orElse(null);
+        if (usuario == null) {
+            return null;
+        }
+        return institutoRepository.findByUsuario(usuario);
+    }
+
+    @Transactional
     public Instituto saveInstituto(Instituto instituto) {
         return institutoRepository.save(instituto);
     }
 
+    @Transactional
     public void deleteInstituto(Long id) {
         institutoRepository.deleteById(id);
-    }
-
-    public Instituto getInstitutoActual() {
-        Usuario usuarioActual = usuarioService.getUsuarioActual();
-        if (usuarioActual == null || !"INSTITUTO".equals(usuarioActual.getRol())) {
-            return null;
-        }
-        return institutoRepository.findByUsuario(usuarioActual);
-    }
-
-    public Instituto findByUsuario(Usuario usuario) {
-        return institutoRepository.findByUsuario(usuario);
-    }
-
-    public Instituto createInstitutoForUsuario(Usuario usuario) {
-        Instituto instituto = new Instituto();
-        instituto.setUsuario(usuario);
-        instituto.setNombre(usuario.getNombre());
-        return institutoRepository.save(instituto);
     }
 }

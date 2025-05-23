@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Gestionar Oportunidades - Portal de Oportunidades</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+        }
+        .loading.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn {
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-lg fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors">
+                        <i class="fas fa-graduation-cap mr-2"></i>
+                        Portal de Oportunidades
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button id="profile-menu-button" class="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <span id="user-name"></span>
+                            <i class="fas fa-chevron-down text-sm"></i>
+                        </button>
+                        <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                            <a href="/instituto/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-home mr-2"></i>Dashboard
+                            </a>
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-16">
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <!-- Alertas -->
+            <div id="alert-container" class="mb-4"></div>
+
+            <!-- Encabezado -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-briefcase mr-2 text-primary-600"></i>Gestionar Oportunidades
+                </h1>
+                <a href="/instituto/oportunidades/nueva" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
+                    <i class="fas fa-plus mr-2"></i>Nueva Oportunidad
+                </a>
+            </div>
+
+            <!-- Filtros -->
+            <div class="bg-white shadow rounded-lg p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="filtro-tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
+                        <select id="filtro-tipo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="">Todos</option>
+                            <option value="BECA">Beca</option>
+                            <option value="CONVOCATORIA">Convocatoria</option>
+                            <option value="EVENTO">Evento</option>
+                            <option value="PROGRAMA">Programa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filtro-area" class="block text-sm font-medium text-gray-700">Área</label>
+                        <select id="filtro-area" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="">Todas</option>
+                            <option value="CIENCIAS">Ciencias</option>
+                            <option value="INGENIERIA">Ingeniería</option>
+                            <option value="HUMANIDADES">Humanidades</option>
+                            <option value="ARTES">Artes</option>
+                            <option value="SALUD">Salud</option>
+                            <option value="NEGOCIOS">Negocios</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="filtro-estado" class="block text-sm font-medium text-gray-700">Estado</label>
+                        <select id="filtro-estado" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="">Todos</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="APROBADA">Aprobada</option>
+                            <option value="RECHAZADA">Rechazada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Oportunidades -->
+            <div class="bg-white shadow rounded-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Área</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Límite</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oportunidades-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Las oportunidades se cargarán dinámicamente aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edición -->
+    <div id="edit-modal" class="modal">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    <i class="fas fa-edit mr-2 text-primary-600"></i>Editar Oportunidad
+                </h3>
+                <form id="edit-form" class="space-y-6">
+                    <input type="hidden" id="edit-id">
+                    <div>
+                        <label for="edit-titulo" class="block text-sm font-medium text-gray-700">Título</label>
+                        <input type="text" id="edit-titulo" name="titulo" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+
+                    <div>
+                        <label for="edit-tipo" class="block text-sm font-medium text-gray-700">Tipo de Oportunidad</label>
+                        <select id="edit-tipo" name="tipo" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="BECA">Beca</option>
+                            <option value="CONVOCATORIA">Convocatoria</option>
+                            <option value="EVENTO">Evento</option>
+                            <option value="PROGRAMA">Programa</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="edit-area" class="block text-sm font-medium text-gray-700">Área</label>
+                        <select id="edit-area" name="area" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="CIENCIAS">Ciencias</option>
+                            <option value="INGENIERIA">Ingeniería</option>
+                            <option value="HUMANIDADES">Humanidades</option>
+                            <option value="ARTES">Artes</option>
+                            <option value="SALUD">Salud</option>
+                            <option value="NEGOCIOS">Negocios</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="edit-descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                        <textarea id="edit-descripcion" name="descripcion" rows="4" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="edit-requisitos" class="block text-sm font-medium text-gray-700">Requisitos</label>
+                        <textarea id="edit-requisitos" name="requisitos" rows="4" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="edit-monto" class="block text-sm font-medium text-gray-700">Monto o Beneficio</label>
+                        <input type="text" id="edit-monto" name="monto" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+
+                    <div>
+                        <label for="edit-fecha-limite" class="block text-sm font-medium text-gray-700">Fecha Límite</label>
+                        <input type="date" id="edit-fecha-limite" name="fecha-limite" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+
+                    <div>
+                        <label for="edit-contacto" class="block text-sm font-medium text-gray-700">Información de Contacto</label>
+                        <input type="text" id="edit-contacto" name="contacto" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeEditModal()" class="btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/auth.js}"></script>
+    <script>
+        // Funciones de utilidad
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert p-4 mb-4 rounded-md ${
+                type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`;
+            alert.innerHTML = message;
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        // Verificar autenticación
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (isLoggedIn !== 'true' || userRole !== 'INSTITUTO') {
+                window.location.href = '/auth/login';
+            }
+        }
+
+        // Cargar datos del instituto
+        async function loadInstitutoData() {
+            try {
+                showLoading();
+                const userId = localStorage.getItem('userId');
+                const response = await fetch(`/instituto/api/perfil?userId=${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('user-name').textContent = data.nombreInstitucion || 'Instituto';
+                } else {
+                    throw new Error('Error al cargar datos del instituto');
+                }
+            } catch (error) {
+                console.error('Error al cargar datos del instituto:', error);
+                showAlert('Error al cargar datos del instituto', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Cargar oportunidades
+        async function loadOportunidades() {
+            try {
+                showLoading();
+                const userId = localStorage.getItem('userId');
+                const response = await fetch(`/instituto/api/perfil?userId=${userId}`);
+                if (!response.ok) throw new Error('Error al obtener datos del instituto');
+                
+                const instituto = await response.json();
+                const oportunidadesResponse = await fetch(`/instituto/api/oportunidades?institutoId=${instituto.id}`);
+                if (!oportunidadesResponse.ok) throw new Error('Error al cargar oportunidades');
+                
+                const oportunidades = await oportunidadesResponse.json();
+                const tbody = document.getElementById('oportunidades-body');
+                tbody.innerHTML = '';
+
+                oportunidades.forEach(oportunidad => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${oportunidad.titulo}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${oportunidad.tipo}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${oportunidad.area}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${new Date(oportunidad.fechaLimite).toLocaleDateString()}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                oportunidad.estado === 'APROBADA' ? 'bg-green-100 text-green-800' :
+                                oportunidad.estado === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                            }">
+                                ${oportunidad.estado}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="openEditModal(${JSON.stringify(oportunidad).replace(/"/g, '&quot;')})" 
+                                class="text-primary-600 hover:text-primary-900 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteOportunidad(${oportunidad.id})" 
+                                class="text-red-600 hover:text-red-900 mr-3">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button onclick="toggleEstado(${oportunidad.id}, '${oportunidad.estado}')" 
+                                class="text-gray-600 hover:text-gray-900">
+                                <i class="fas fa-${oportunidad.estado === 'APROBADA' ? 'pause' : 'play'}"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error al cargar oportunidades:', error);
+                showAlert('Error al cargar oportunidades', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Funciones del modal de edición
+        function openEditModal(oportunidad) {
+            document.getElementById('edit-id').value = oportunidad.id;
+            document.getElementById('edit-titulo').value = oportunidad.titulo;
+            document.getElementById('edit-tipo').value = oportunidad.tipo;
+            document.getElementById('edit-area').value = oportunidad.area;
+            document.getElementById('edit-descripcion').value = oportunidad.descripcion;
+            document.getElementById('edit-requisitos').value = oportunidad.requisitos;
+            document.getElementById('edit-monto').value = oportunidad.monto;
+            document.getElementById('edit-fecha-limite').value = oportunidad.fechaLimite;
+            document.getElementById('edit-contacto').value = oportunidad.contacto;
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+        }
+
+        // Event listener para el formulario de edición
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            
+            const formData = {
+                titulo: document.getElementById('edit-titulo').value,
+                tipo: document.getElementById('edit-tipo').value,
+                area: document.getElementById('edit-area').value,
+                descripcion: document.getElementById('edit-descripcion').value,
+                requisitos: document.getElementById('edit-requisitos').value,
+                monto: document.getElementById('edit-monto').value,
+                fechaLimite: document.getElementById('edit-fecha-limite').value,
+                contacto: document.getElementById('edit-contacto').value
+            };
+
+            try {
+                showLoading();
+                const response = await fetch(`/instituto/api/oportunidades/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showAlert('Oportunidad actualizada exitosamente');
+                    closeEditModal();
+                    loadOportunidades();
+                } else {
+                    throw new Error('Error al actualizar la oportunidad');
+                }
+            } catch (error) {
+                console.error('Error al actualizar oportunidad:', error);
+                showAlert('Error al actualizar oportunidad', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Eliminar oportunidad
+        async function deleteOportunidad(id) {
+            if (!confirm('¿Está seguro de eliminar esta oportunidad?')) return;
+
+            try {
+                showLoading();
+                const response = await fetch(`/instituto/api/oportunidades/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showAlert('Oportunidad eliminada exitosamente');
+                    loadOportunidades();
+                } else {
+                    throw new Error('Error al eliminar la oportunidad');
+                }
+            } catch (error) {
+                console.error('Error al eliminar oportunidad:', error);
+                showAlert('Error al eliminar oportunidad', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Cambiar estado de la oportunidad
+        async function toggleEstado(id, estadoActual) {
+            const nuevoEstado = estadoActual === 'APROBADA' ? 'PENDIENTE' : 'APROBADA';
+            
+            try {
+                showLoading();
+                const response = await fetch(`/instituto/api/oportunidades/${id}/estado`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+
+                if (response.ok) {
+                    showAlert(`Oportunidad ${nuevoEstado === 'APROBADA' ? 'activada' : 'desactivada'} exitosamente`);
+                    loadOportunidades();
+                } else {
+                    throw new Error('Error al cambiar el estado de la oportunidad');
+                }
+            } catch (error) {
+                console.error('Error al cambiar estado:', error);
+                showAlert('Error al cambiar estado', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Event listeners para filtros
+        document.getElementById('filtro-tipo').addEventListener('change', loadOportunidades);
+        document.getElementById('filtro-area').addEventListener('change', loadOportunidades);
+        document.getElementById('filtro-estado').addEventListener('change', loadOportunidades);
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadInstitutoData();
+            loadOportunidades();
+
+            // Event listener para el menú de perfil
+            document.getElementById('profile-menu-button').addEventListener('click', () => {
+                document.getElementById('profile-menu').classList.toggle('hidden');
+            });
+
+            // Cerrar menú de perfil al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('profile-menu');
+                const button = document.getElementById('profile-menu-button');
+                if (!menu.contains(e.target) && !button.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

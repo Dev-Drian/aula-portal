@@ -4,149 +4,76 @@ import com.example.demo.entity.Instituto;
 import com.example.demo.entity.Oportunidad;
 import com.example.demo.service.InstitutoService;
 import com.example.demo.service.OportunidadService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RestController
+@Controller
 @RequestMapping("/api/instituto")
 public class InstitutoController {
 
-    @Autowired
-    private InstitutoService institutoService;
+    private final InstitutoService institutoService;
+    private final OportunidadService oportunidadService;
 
-    @Autowired
-    private OportunidadService oportunidadService;
+    public InstitutoController(InstitutoService institutoService, OportunidadService oportunidadService) {
+        this.institutoService = institutoService;
+        this.oportunidadService = oportunidadService;
+    }
 
-    @GetMapping("/estadisticas")
-    public ResponseEntity<Map<String, Long>> getEstadisticas() {
-        Instituto instituto = institutoService.getInstitutoActual();
-        if (instituto == null) {
-            return ResponseEntity.notFound().build();
-        }
+    
 
-        Map<String, Long> estadisticas = new HashMap<>();
-        estadisticas.put("totalOportunidades", oportunidadService.countByInstituto(instituto));
-        estadisticas.put("totalPendientes", oportunidadService.countByInstitutoAndEstado(instituto, "PENDIENTE"));
-        estadisticas.put("totalAprobadas", oportunidadService.countByInstitutoAndEstado(instituto, "APROBADA"));
+    @GetMapping("/perfil")
+    @ResponseBody
+    public ResponseEntity<Instituto> getPerfil(@RequestParam Long userId) {
+        Instituto instituto = institutoService.getInstitutoByUserId(userId);
+        return instituto != null ? ResponseEntity.ok(instituto) : ResponseEntity.notFound().build();
+    }
 
-        return ResponseEntity.ok(estadisticas);
+    @PutMapping("/perfil")
+    @ResponseBody
+    public ResponseEntity<Instituto> actualizarPerfil(@RequestBody Instituto instituto) {
+        return ResponseEntity.ok(institutoService.saveInstituto(instituto));
     }
 
     @GetMapping("/oportunidades")
-    public ResponseEntity<List<Oportunidad>> getOportunidades(@RequestParam(required = false) String status) {
-        Instituto instituto = institutoService.getInstitutoActual();
-        if (instituto == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        List<Oportunidad> oportunidades;
-        if (status != null && !status.isEmpty()) {
-            oportunidades = oportunidadService.findByInstitutoAndEstado(instituto, status);
-        } else {
-            oportunidades = oportunidadService.findByInstituto(instituto);
-        }
-
-        return ResponseEntity.ok(oportunidades);
-    }
-
-    @GetMapping("/oportunidades/{id}")
-    public ResponseEntity<Oportunidad> getOportunidad(@PathVariable Long id) {
-        Instituto instituto = institutoService.getInstitutoActual();
-        if (instituto == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Oportunidad oportunidad = oportunidadService.findById(id);
-        if (oportunidad == null || !oportunidad.getInstituto().equals(instituto)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(oportunidad);
+    @ResponseBody
+    public ResponseEntity<List<Oportunidad>> getOportunidades(@RequestParam Long institutoId) {
+        return ResponseEntity.ok(oportunidadService.getOportunidadesByInstituto(institutoId));
     }
 
     @PostMapping("/oportunidades")
-    public ResponseEntity<Oportunidad> createOportunidad(@RequestBody Oportunidad oportunidad) {
-        Instituto instituto = institutoService.getInstitutoActual();
-        if (instituto == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        oportunidad.setInstituto(instituto);
+    @ResponseBody
+    public ResponseEntity<Oportunidad> crearOportunidad(@RequestBody Oportunidad oportunidad) {
         oportunidad.setEstado("PENDIENTE");
-        oportunidad.setActiva(false);
-
-        Oportunidad savedOportunidad = oportunidadService.save(oportunidad);
-        return ResponseEntity.ok(savedOportunidad);
+        return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidad));
     }
 
     @PutMapping("/oportunidades/{id}")
-    public ResponseEntity<Oportunidad> updateOportunidad(@PathVariable Long id, @RequestBody Oportunidad oportunidad) {
-        Instituto instituto = institutoService.getInstitutoActual();
-        if (instituto == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Oportunidad existingOportunidad = oportunidadService.findById(id);
-        if (existingOportunidad == null || !existingOportunidad.getInstituto().equals(instituto)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (!"PENDIENTE".equals(existingOportunidad.getEstado())) {
-            return ResponseEntity.badRequest().build();
-        }
-
+    @ResponseBody
+    public ResponseEntity<Oportunidad> actualizarOportunidad(@PathVariable Long id, @RequestBody Oportunidad oportunidad) {
         oportunidad.setId(id);
-        oportunidad.setInstituto(instituto);
-        oportunidad.setEstado("PENDIENTE");
-        oportunidad.setActiva(false);
-
-        Oportunidad updatedOportunidad = oportunidadService.save(oportunidad);
-        return ResponseEntity.ok(updatedOportunidad);
+        return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidad));
     }
 
     @DeleteMapping("/oportunidades/{id}")
-    public ResponseEntity<Void> deleteOportunidad(@PathVariable Long id) {
-        Instituto instituto = institutoService.getInstitutoActual();
-        if (instituto == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Oportunidad oportunidad = oportunidadService.findById(id);
-        if (oportunidad == null || !oportunidad.getInstituto().equals(instituto)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (!"PENDIENTE".equals(oportunidad.getEstado())) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        oportunidadService.delete(id);
+    @ResponseBody
+    public ResponseEntity<Void> eliminarOportunidad(@PathVariable Long id) {
+        oportunidadService.deleteOportunidad(id);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/oportunidades/{id}/toggle")
-    public ResponseEntity<Oportunidad> toggleOportunidad(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
-        Instituto instituto = institutoService.getInstitutoActual();
-        if (instituto == null) {
-            return ResponseEntity.notFound().build();
+    @PutMapping("/oportunidades/{id}/estado")
+    @ResponseBody
+    public ResponseEntity<Oportunidad> actualizarEstado(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String nuevoEstado = body.get("estado");
+        Oportunidad oportunidad = oportunidadService.getOportunidadById(id);
+        if (oportunidad != null) {
+            oportunidad.setEstado(nuevoEstado);
+            return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidad));
         }
-
-        Oportunidad oportunidad = oportunidadService.findById(id);
-        if (oportunidad == null || !oportunidad.getInstituto().equals(instituto)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (!"APROBADA".equals(oportunidad.getEstado())) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        oportunidad.setActiva(body.get("activa"));
-        Oportunidad updatedOportunidad = oportunidadService.save(oportunidad);
-        return ResponseEntity.ok(updatedOportunidad);
+        return ResponseEntity.notFound().build();
     }
 }

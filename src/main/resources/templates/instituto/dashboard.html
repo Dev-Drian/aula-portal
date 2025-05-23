@@ -32,13 +32,72 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 1000;
+        }
+        .loading.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn {
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .alert {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     <!-- Loading Spinner -->
-    <div id="loading" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-        <div class="flex items-center justify-center h-full">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </div>
+    <div id="loading" class="loading">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
     </div>
 
     <!-- Navbar -->
@@ -115,6 +174,23 @@
                 </div>
             </div>
 
+            <!-- Perfil Section -->
+            <div class="card bg-white shadow rounded-lg mb-6">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">
+                            <i class="fas fa-building mr-2 text-primary-600"></i>Información del Instituto
+                        </h3>
+                        <button onclick="showProfileModal()" class="btn text-primary-600 hover:text-primary-700">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                    <div id="profile-info" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- La información del perfil se cargará dinámicamente aquí -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Acciones Rápidas -->
             <div class="card bg-white shadow rounded-lg mb-6">
                 <div class="px-4 py-5 sm:p-6">
@@ -122,35 +198,30 @@
                         <i class="fas fa-bolt mr-2 text-primary-600"></i>Acciones Rápidas
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button onclick="showOportunidadModal()" class="btn bg-primary-600 text-white p-4 rounded-lg hover:bg-primary-700 flex items-center justify-center">
+                        <a href="/instituto/oportunidades/nueva" class="btn bg-primary-600 text-white p-4 rounded-lg hover:bg-primary-700 flex items-center justify-center">
                             <i class="fas fa-plus mr-2"></i>
                             <span>Publicar Nueva Oportunidad</span>
-                        </button>
-                        <button onclick="loadOportunidades()" class="btn bg-green-600 text-white p-4 rounded-lg hover:bg-green-700 flex items-center justify-center">
-                            <i class="fas fa-sync-alt mr-2"></i>
-                            <span>Actualizar Lista</span>
-                        </button>
+                        </a>
+                        <a href="/instituto/oportunidades" class="btn bg-green-600 text-white p-4 rounded-lg hover:bg-green-700 flex items-center justify-center">
+                            <i class="fas fa-list mr-2"></i>
+                            <span>Gestionar Oportunidades</span>
+                        </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Lista de Oportunidades -->
-            <div class="card bg-white shadow rounded-lg">
+            <!-- Últimas Oportunidades -->
+            <div class="card bg-white shadow rounded-lg mt-6">
                 <div class="px-4 py-5 sm:p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-medium text-gray-900">
-                            <i class="fas fa-list mr-2 text-primary-600"></i>Mis Oportunidades
+                            <i class="fas fa-clock mr-2 text-primary-600"></i>Últimas Oportunidades
                         </h3>
-                        <div class="flex space-x-2">
-                            <select id="filter-status" onchange="loadOportunidades()" class="rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                                <option value="">Todos los estados</option>
-                                <option value="PENDIENTE">Pendientes</option>
-                                <option value="APROBADA">Aprobadas</option>
-                                <option value="RECHAZADA">Rechazadas</option>
-                            </select>
-                        </div>
+                        <a href="/instituto/oportunidades" class="text-primary-600 hover:text-primary-700">
+                            Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
                     </div>
-                    <div id="oportunidades-list" class="space-y-4">
+                    <div id="latest-opportunities" class="space-y-4">
                         <!-- Las oportunidades se cargarán dinámicamente aquí -->
                     </div>
                 </div>
@@ -158,54 +229,26 @@
         </div>
     </div>
 
-    <!-- Modal de Oportunidad -->
-    <div id="oportunidad-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <!-- Modal de Perfil -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
-                <h3 class="text-lg font-medium text-gray-900 mb-4" id="modal-title">Nueva Oportunidad</h3>
-                <form id="oportunidad-form" class="space-y-4">
-                    <input type="hidden" id="oportunidad-id">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Editar Perfil</h3>
+                <form id="profile-form" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Título</label>
-                        <input type="text" id="titulo" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                        <label class="block text-sm font-medium text-gray-700">Nombre de la Institución</label>
+                        <input type="text" id="nombre-institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tipo</label>
-                        <select id="tipo" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                            <option value="">Seleccione un tipo</option>
-                            <option value="BECA">Beca</option>
-                            <option value="CONVOCATORIA">Convocatoria</option>
-                            <option value="PROGRAMA">Programa</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Descripción</label>
-                        <textarea id="descripcion" rows="3" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Requisitos</label>
-                        <textarea id="requisitos" rows="3" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Monto</label>
-                        <input type="number" id="monto" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Fecha Límite</label>
-                        <input type="date" id="fechaLimite" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                        <label class="block text-sm font-medium text-gray-700">Sitio Web</label>
+                        <input type="url" id="sitio-web" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                     </div>
                     <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="hideOportunidadModal()" class="btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+                        <button type="button" onclick="hideProfileModal()" class="btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
                             Cancelar
                         </button>
                         <button type="submit" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700">
-                            Guardar
+                            Guardar Cambios
                         </button>
                     </div>
                 </form>
@@ -218,17 +261,17 @@
     <script>
         // Funciones de utilidad
         function showLoading() {
-            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('loading').classList.add('active');
         }
 
         function hideLoading() {
-            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('loading').classList.remove('active');
         }
 
         function showAlert(message, type = 'success') {
             const alertContainer = document.getElementById('alert-container');
             const alert = document.createElement('div');
-            alert.className = `p-4 mb-4 rounded-md ${
+            alert.className = `alert p-4 mb-4 rounded-md ${
                 type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
             }`;
             alert.innerHTML = message;
@@ -236,31 +279,117 @@
             setTimeout(() => alert.remove(), 5000);
         }
 
-        // Funciones del modal de oportunidad
-        function showOportunidadModal() {
-            document.getElementById('oportunidad-modal').classList.remove('hidden');
-            document.getElementById('oportunidad-form').reset();
-            document.getElementById('oportunidad-id').value = '';
-            document.getElementById('modal-title').textContent = 'Nueva Oportunidad';
+        // Funciones del perfil
+        function showProfileModal() {
+            document.getElementById('profile-modal').classList.remove('hidden');
         }
 
-        function hideOportunidadModal() {
-            document.getElementById('oportunidad-modal').classList.add('hidden');
+        function hideProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        // Verificar autenticación
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (isLoggedIn !== 'true' || userRole !== 'INSTITUTO') {
+                window.location.href = '/auth/login';
+            }
+        }
+
+        // Cargar datos del instituto
+        async function loadInstitutoData() {
+            try {
+                showLoading();
+                const userId = localStorage.getItem('userId');
+                const response = await fetch(`/instituto/api/perfil?userId=${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('user-name').textContent = data.nombreInstitucion || 'Instituto';
+                    updateProfileInfo(data);
+
+                    // Actualizar valores en el modal
+                    document.getElementById('nombre-institucion').value = data.nombreInstitucion || '';
+                    document.getElementById('sitio-web').value = data.sitioWeb || '';
+                } else {
+                    throw new Error('Error al cargar datos del instituto');
+                }
+            } catch (error) {
+                console.error('Error al cargar datos del instituto:', error);
+                showAlert('Error al cargar datos del instituto', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Event listener para el formulario de perfil
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                nombreInstitucion: document.getElementById('nombre-institucion').value,
+                sitioWeb: document.getElementById('sitio-web').value
+            };
+
+            try {
+                showLoading();
+                const response = await fetch('/instituto/api/perfil', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const updatedProfile = await response.json();
+                    showAlert('Perfil actualizado exitosamente');
+                    hideProfileModal();
+                    updateProfileInfo(updatedProfile);
+                } else {
+                    throw new Error('Error al actualizar el perfil');
+                }
+            } catch (error) {
+                console.error('Error al actualizar perfil:', error);
+                showAlert('Error al actualizar perfil', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Función para actualizar la información del perfil en la UI
+        function updateProfileInfo(profile) {
+            const profileInfo = document.getElementById('profile-info');
+            profileInfo.innerHTML = `
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500">Nombre de la Institución</p>
+                    <p class="font-medium">${profile.nombreInstitucion || 'No especificado'}</p>
+                </div>
+                <div class="space-y-2">
+                    <p class="text-sm text-gray-500">Sitio Web</p>
+                    <p class="font-medium">${profile.sitioWeb || 'No especificado'}</p>
+                </div>
+            `;
         }
 
         // Cargar estadísticas
         async function loadEstadisticas() {
             try {
                 showLoading();
-                const response = await fetch('/api/instituto/estadisticas');
+                const userId = localStorage.getItem('userId');
+                const response = await fetch(`/instituto/api/oportunidades?institutoId=${userId}`);
                 if (!response.ok) {
                     throw new Error('Error al cargar estadísticas');
                 }
                 const data = await response.json();
                 
-                document.getElementById('total-oportunidades').textContent = data.totalOportunidades || 0;
-                document.getElementById('total-pendientes').textContent = data.totalPendientes || 0;
-                document.getElementById('total-aprobadas').textContent = data.totalAprobadas || 0;
+                const total = data.length;
+                const pendientes = data.filter(o => o.estado === 'PENDIENTE').length;
+                const aprobadas = data.filter(o => o.estado === 'APROBADA').length;
+                
+                document.getElementById('total-oportunidades').textContent = total;
+                document.getElementById('total-pendientes').textContent = pendientes;
+                document.getElementById('total-aprobadas').textContent = aprobadas;
             } catch (error) {
                 console.error('Error al cargar estadísticas:', error);
                 showAlert('Error al cargar estadísticas', 'error');
@@ -269,37 +398,34 @@
             }
         }
 
-        // Cargar oportunidades
-        async function loadOportunidades() {
+        // Cargar últimas oportunidades
+        async function loadLatestOpportunities() {
             try {
                 showLoading();
-                const status = document.getElementById('filter-status').value;
-                const url = status ? `/api/instituto/oportunidades?status=${status}` : '/api/instituto/oportunidades';
-                
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error('Error al cargar oportunidades');
-                }
+                const userId = localStorage.getItem('userId');
+                const response = await fetch(`/instituto/api/oportunidades?institutoId=${userId}`);
                 const data = await response.json();
                 
-                const oportunidadesList = document.getElementById('oportunidades-list');
+                const latestList = document.getElementById('latest-opportunities');
                 if (!data || data.length === 0) {
-                    oportunidadesList.innerHTML = `
+                    latestList.innerHTML = `
                         <div class="text-center text-gray-500 py-4">
-                            No hay oportunidades disponibles
+                            No hay oportunidades publicadas
                         </div>
                     `;
                     return;
                 }
 
-                oportunidadesList.innerHTML = data.map(opp => `
-                    <div class="card bg-white border-l-4 ${getStatusColor(opp.estado)} rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+                // Mostrar solo las últimas 5 oportunidades
+                const latest = data.slice(0, 5);
+                latestList.innerHTML = latest.map(opp => `
+                    <div class="card bg-white border-l-4 ${getEstadoColor(opp.estado)} rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
                         <div class="p-4">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center space-x-2">
                                         <h4 class="text-lg font-semibold text-gray-900 truncate">${opp.titulo}</h4>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(opp.estado)}">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getEstadoBadgeColor(opp.estado)}">
                                             ${opp.estado}
                                         </span>
                                     </div>
@@ -309,183 +435,60 @@
                                             <i class="fas fa-tag mr-1"></i>${opp.tipo}
                                         </span>
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            <i class="fas fa-dollar-sign mr-1"></i>${opp.monto}
-                                        </span>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            <i class="far fa-calendar-alt mr-1"></i>${new Date(opp.fechaLimite).toLocaleDateString()}
+                                            <i class="far fa-calendar-alt mr-1"></i>${new Date(opp.fecha).toLocaleDateString()}
                                         </span>
                                     </div>
                                 </div>
                                 <div class="ml-4 flex flex-col items-end space-y-2">
-                                    ${opp.estado === 'PENDIENTE' ? `
-                                        <button onclick="editOportunidad(${opp.id})" class="btn text-primary-600 hover:text-primary-700 transition-colors text-sm">
-                                            <i class="fas fa-edit mr-1"></i>Editar
-                                        </button>
-                                        <button onclick="deleteOportunidad(${opp.id})" class="btn text-red-600 hover:text-red-700 transition-colors text-sm">
-                                            <i class="fas fa-trash mr-1"></i>Eliminar
-                                        </button>
-                                    ` : ''}
-                                    ${opp.estado === 'APROBADA' ? `
-                                        <button onclick="toggleOportunidad(${opp.id}, ${!opp.activa})" class="btn ${opp.activa ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'} transition-colors text-sm">
-                                            <i class="fas fa-${opp.activa ? 'pause' : 'play'} mr-1"></i>${opp.activa ? 'Desactivar' : 'Activar'}
-                                        </button>
-                                    ` : ''}
+                                    <a href="/instituto/oportunidades/${opp.id}" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors text-sm">
+                                        <i class="fas fa-edit mr-1"></i>Editar
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error al cargar oportunidades:', error);
-                showAlert('Error al cargar oportunidades', 'error');
+                console.error('Error al cargar últimas oportunidades:', error);
+                showAlert('Error al cargar últimas oportunidades', 'error');
             } finally {
                 hideLoading();
             }
         }
 
-        // Funciones auxiliares
-        function getStatusColor(status) {
-            switch(status) {
-                case 'PENDIENTE': return 'border-yellow-500';
-                case 'APROBADA': return 'border-green-500';
-                case 'RECHAZADA': return 'border-red-500';
-                default: return 'border-gray-500';
+        // Funciones auxiliares para colores
+        function getEstadoColor(estado) {
+            switch (estado) {
+                case 'APROBADA':
+                    return 'border-green-500';
+                case 'PENDIENTE':
+                    return 'border-yellow-500';
+                case 'RECHAZADA':
+                    return 'border-red-500';
+                default:
+                    return 'border-gray-500';
             }
         }
 
-        function getStatusBadgeColor(status) {
-            switch(status) {
-                case 'PENDIENTE': return 'bg-yellow-100 text-yellow-800';
-                case 'APROBADA': return 'bg-green-100 text-green-800';
-                case 'RECHAZADA': return 'bg-red-100 text-red-800';
-                default: return 'bg-gray-100 text-gray-800';
-            }
-        }
-
-        // Event listeners
-        document.getElementById('oportunidad-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                id: document.getElementById('oportunidad-id').value,
-                titulo: document.getElementById('titulo').value,
-                tipo: document.getElementById('tipo').value,
-                descripcion: document.getElementById('descripcion').value,
-                requisitos: document.getElementById('requisitos').value,
-                monto: document.getElementById('monto').value,
-                fechaLimite: document.getElementById('fechaLimite').value
-            };
-
-            try {
-                showLoading();
-                const url = formData.id ? `/api/instituto/oportunidades/${formData.id}` : '/api/instituto/oportunidades';
-                const method = formData.id ? 'PUT' : 'POST';
-
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (response.ok) {
-                    showAlert(formData.id ? 'Oportunidad actualizada exitosamente' : 'Oportunidad creada exitosamente');
-                    hideOportunidadModal();
-                    loadOportunidades();
-                    loadEstadisticas();
-                } else {
-                    throw new Error('Error al guardar la oportunidad');
-                }
-            } catch (error) {
-                console.error('Error al guardar oportunidad:', error);
-                showAlert('Error al guardar la oportunidad', 'error');
-            } finally {
-                hideLoading();
-            }
-        });
-
-        // Funciones de gestión de oportunidades
-        async function editOportunidad(id) {
-            try {
-                showLoading();
-                const response = await fetch(`/api/instituto/oportunidades/${id}`);
-                if (!response.ok) {
-                    throw new Error('Error al cargar la oportunidad');
-                }
-                const data = await response.json();
-                
-                document.getElementById('oportunidad-id').value = data.id;
-                document.getElementById('titulo').value = data.titulo;
-                document.getElementById('tipo').value = data.tipo;
-                document.getElementById('descripcion').value = data.descripcion;
-                document.getElementById('requisitos').value = data.requisitos;
-                document.getElementById('monto').value = data.monto;
-                document.getElementById('fechaLimite').value = data.fechaLimite;
-                
-                document.getElementById('modal-title').textContent = 'Editar Oportunidad';
-                showOportunidadModal();
-            } catch (error) {
-                console.error('Error al cargar oportunidad:', error);
-                showAlert('Error al cargar la oportunidad', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function deleteOportunidad(id) {
-            if (!confirm('¿Estás seguro de que deseas eliminar esta oportunidad?')) {
-                return;
-            }
-            
-            try {
-                showLoading();
-                const response = await fetch(`/api/instituto/oportunidades/${id}`, {
-                    method: 'DELETE'
-                });
-                if (response.ok) {
-                    showAlert('Oportunidad eliminada exitosamente');
-                    loadOportunidades();
-                    loadEstadisticas();
-                } else {
-                    throw new Error('Error al eliminar la oportunidad');
-                }
-            } catch (error) {
-                console.error('Error al eliminar oportunidad:', error);
-                showAlert('Error al eliminar la oportunidad', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function toggleOportunidad(id, activa) {
-            try {
-                showLoading();
-                const response = await fetch(`/api/instituto/oportunidades/${id}/toggle`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ activa })
-                });
-                if (response.ok) {
-                    showAlert(`Oportunidad ${activa ? 'activada' : 'desactivada'} exitosamente`);
-                    loadOportunidades();
-                } else {
-                    throw new Error('Error al cambiar el estado de la oportunidad');
-                }
-            } catch (error) {
-                console.error('Error al cambiar estado de oportunidad:', error);
-                showAlert('Error al cambiar el estado de la oportunidad', 'error');
-            } finally {
-                hideLoading();
+        function getEstadoBadgeColor(estado) {
+            switch (estado) {
+                case 'APROBADA':
+                    return 'bg-green-100 text-green-800';
+                case 'PENDIENTE':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'RECHAZADA':
+                    return 'bg-red-100 text-red-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
             }
         }
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
+            loadInstitutoData();
             loadEstadisticas();
-            loadOportunidades();
+            loadLatestOpportunities();
 
             // Event listener para el menú de perfil
             document.getElementById('profile-menu-button').addEventListener('click', () => {
