@@ -1,18 +1,25 @@
 package com.example.demo.controller;
+
 import com.example.demo.entity.Oportunidad;
+import com.example.demo.entity.Aspirante;
 import com.example.demo.service.OportunidadService;
+import com.example.demo.service.AspiranteService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/oportunidades")
+@CrossOrigin(origins = "*")
 public class OportunidadController {
 
-    private final OportunidadService oportunidadService;
+    @Autowired
+    private OportunidadService oportunidadService;
 
-    public OportunidadController(OportunidadService oportunidadService) {
-        this.oportunidadService = oportunidadService;
-    }
+    @Autowired
+    private AspiranteService aspiranteService;
 
     @GetMapping
     public List<Oportunidad> getAllOportunidades() {
@@ -20,8 +27,12 @@ public class OportunidadController {
     }
 
     @GetMapping("/{id}")
-    public Oportunidad getOportunidadById(@PathVariable Long id) {
-        return oportunidadService.getOportunidadById(id);
+    public ResponseEntity<Oportunidad> getOportunidadById(@PathVariable Long id) {
+        Oportunidad oportunidad = oportunidadService.getOportunidadById(id);
+        if (oportunidad != null) {
+            return ResponseEntity.ok(oportunidad);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
@@ -30,14 +41,36 @@ public class OportunidadController {
     }
 
     @PutMapping("/{id}")
-    public Oportunidad updateOportunidad(@PathVariable Long id, @RequestBody Oportunidad oportunidad) {
-        oportunidad.setId(id);
-        return oportunidadService.saveOportunidad(oportunidad);
+    public ResponseEntity<Oportunidad> updateOportunidad(@PathVariable Long id, @RequestBody Oportunidad oportunidad) {
+        Oportunidad existingOportunidad = oportunidadService.getOportunidadById(id);
+        if (existingOportunidad != null) {
+            oportunidad.setId(id);
+            return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidad));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public void deleteOportunidad(@PathVariable Long id) {
-        oportunidadService.deleteOportunidad(id);
+    public ResponseEntity<Void> deleteOportunidad(@PathVariable Long id) {
+        Oportunidad oportunidad = oportunidadService.getOportunidadById(id);
+        if (oportunidad != null) {
+            oportunidadService.deleteOportunidad(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/instituto/{institutoId}")
+    public List<Oportunidad> getOportunidadesByInstituto(@PathVariable Long institutoId) {
+        return oportunidadService.getOportunidadesByInstituto(institutoId);
+    }
+
+    @GetMapping("/disponibles/{aspiranteId}")
+    public ResponseEntity<List<Map<String, Object>>> getOportunidadesDisponibles(@PathVariable Long aspiranteId) {
+        Aspirante aspirante = aspiranteService.getAspiranteById(aspiranteId);
+        if (aspirante != null) {
+            return ResponseEntity.ok(oportunidadService.getOportunidadesDisponiblesParaAspirante(aspirante));
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

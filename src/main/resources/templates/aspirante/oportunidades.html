@@ -272,7 +272,8 @@
                     }
                 }
 
-                const response = await fetch('/api/oportunidades');
+                // Obtener oportunidades disponibles para el aspirante
+                const response = await fetch(`/api/oportunidades/disponibles/${currentAspiranteId}`);
                 const data = await response.json();
                 
                 // Obtener oportunidades guardadas

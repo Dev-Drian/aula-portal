@@ -324,7 +324,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <button onclick="viewInscriptionDetails(${ins.id})" class="btn text-primary-600 hover:text-primary-700 transition-colors">
+                                <button onclick="viewInscriptionDetails(${oportunidad.id})" class="btn text-primary-600 hover:text-primary-700 transition-colors">
                                     <i class="fas fa-eye mr-1"></i>Ver detalles
                                 </button>
                             </div>
@@ -346,9 +346,8 @@
         }
 
         // Ver detalles de inscripción
-        function viewInscriptionDetails(id) {
-            // Implementar vista de detalles
-            alert('Funcionalidad en desarrollo');
+        function viewInscriptionDetails(oportunidadId) {
+            window.location.href = `/oportunidad/${oportunidadId}`;
         }
 
         // Inicialización
