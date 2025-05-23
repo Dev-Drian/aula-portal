@@ -109,6 +109,13 @@
                             <i class="fas fa-chevron-down text-sm"></i>
                         </button>
                         <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                            <div class="px-4 py-2">
+                                <label class="block text-sm text-gray-700 mb-1">Cambiar Rol:</label>
+                                <select id="rol-selector" class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                                    <option value="ASPIRANTE">Aspirante</option>
+                                    <option value="INSTITUTO">Instituto</option>
+                                </select>
+                            </div>
                             <a href="/aspirante/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                 <i class="fas fa-user-edit mr-2"></i>Editar Perfil
                             </a>
@@ -234,6 +241,13 @@
                     const data = await response.json();
                     currentAspiranteId = data.id;
                     document.getElementById('user-name').textContent = data.nombre || 'Usuario';
+                    
+                    // Actualizar el selector de rol
+                    const rolSelector = document.getElementById('rol-selector');
+                    if (rolSelector) {
+                        rolSelector.value = data.usuario?.rol || 'ASPIRANTE';
+                    }
+                    
                     return data.id;
                 }
                 throw new Error('Error al cargar perfil');
@@ -243,6 +257,35 @@
                 return null;
             }
         }
+
+        // Cambiar rol
+        document.getElementById('rol-selector').addEventListener('change', async function(e) {
+            try {
+                showLoading();
+                const response = await fetch('/api/aspirante/perfil', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rol: e.target.value
+                    })
+                });
+
+                if (response.ok) {
+                    showAlert('Rol actualizado exitosamente');
+                    // Recargar la página para aplicar los cambios
+                    window.location.reload();
+                } else {
+                    throw new Error('Error al actualizar el rol');
+                }
+            } catch (error) {
+                console.error('Error al actualizar rol:', error);
+                showAlert('Error al actualizar rol', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
 
         // Cargar estadísticas
         async function loadEstadisticas() {

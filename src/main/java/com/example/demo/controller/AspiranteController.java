@@ -145,6 +145,10 @@ public class AspiranteController {
         if (perfilData.containsKey("areaInteres")) {
             aspirante.setAreaInteres(perfilData.get("areaInteres"));
         }
+        if (perfilData.containsKey("rol")) {
+            usuario.setRol(perfilData.get("rol"));
+            usuarioService.saveUsuario(usuario);
+        }
         
         // Guardar los cambios
         Aspirante updatedAspirante = aspiranteService.saveAspirante(aspirante);
