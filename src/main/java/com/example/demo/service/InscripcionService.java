@@ -5,6 +5,7 @@ import com.example.demo.entity.Aspirante;
 import com.example.demo.entity.Oportunidad;
 import com.example.demo.repository.InscripcionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -36,6 +37,7 @@ public class InscripcionService {
         return inscripcionRepository.findByAspiranteAndOportunidad(aspirante, oportunidad);
     }
 
+    @Transactional
     public Inscripcion inscribirAspirante(Aspirante aspirante, Oportunidad oportunidad) {
         // Verificar si ya existe una inscripción
         Inscripcion existente = getInscripcionByAspiranteAndOportunidad(aspirante, oportunidad);
@@ -44,10 +46,14 @@ public class InscripcionService {
         }
 
         // Crear nueva inscripción
-        Inscripcion inscripcion = new Inscripcion(aspirante, oportunidad);
+        Inscripcion inscripcion = new Inscripcion();
+        inscripcion.setAspirante(aspirante);
+        inscripcion.setOportunidad(oportunidad);
+        inscripcion.setEstado("PENDIENTE");
         return inscripcionRepository.save(inscripcion);
     }
 
+    @Transactional
     public Inscripcion actualizarEstado(Long id, String nuevoEstado) {
         Inscripcion inscripcion = getInscripcionById(id);
         if (inscripcion != null) {
@@ -63,5 +69,13 @@ public class InscripcionService {
 
     public void deleteInscripcion(Long id) {
         inscripcionRepository.deleteById(id);
+    }
+
+    public Long countInscripcionesByAspirante(Aspirante aspirante) {
+        return inscripcionRepository.countByAspirante(aspirante);
+    }
+
+    public Long countInscripcionesByAspiranteAndEstado(Aspirante aspirante, String estado) {
+        return inscripcionRepository.countByAspiranteAndEstado(aspirante, estado);
     }
 }

@@ -21,17 +21,20 @@ public class OportunidadGuardadaService {
         return oportunidadGuardadaRepository.findByAspirante(aspirante);
     }
 
+    @Transactional
     public OportunidadGuardada guardarOportunidad(Aspirante aspirante, Oportunidad oportunidad) {
-        OportunidadGuardada existente = oportunidadGuardadaRepository.findByAspiranteAndOportunidad(aspirante, oportunidad);
-        if (existente != null) {
-            return existente;
-        }
-        OportunidadGuardada nueva = new OportunidadGuardada(aspirante, oportunidad);
-        return oportunidadGuardadaRepository.save(nueva);
+        OportunidadGuardada guardada = new OportunidadGuardada();
+        guardada.setAspirante(aspirante);
+        guardada.setOportunidad(oportunidad);
+        return oportunidadGuardadaRepository.save(guardada);
     }
 
     @Transactional
     public void eliminarOportunidadGuardada(Aspirante aspirante, Oportunidad oportunidad) {
         oportunidadGuardadaRepository.deleteByAspiranteAndOportunidad(aspirante, oportunidad);
+    }
+
+    public Long countOportunidadesGuardadasByAspirante(Aspirante aspirante) {
+        return oportunidadGuardadaRepository.countByAspirante(aspirante);
     }
 } 

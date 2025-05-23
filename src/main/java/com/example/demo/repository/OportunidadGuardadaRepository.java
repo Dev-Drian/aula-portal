@@ -12,4 +12,5 @@ public interface OportunidadGuardadaRepository extends JpaRepository<Oportunidad
     List<OportunidadGuardada> findByAspirante(Aspirante aspirante);
     OportunidadGuardada findByAspiranteAndOportunidad(Aspirante aspirante, Oportunidad oportunidad);
     void deleteByAspiranteAndOportunidad(Aspirante aspirante, Oportunidad oportunidad);
+    Long countByAspirante(Aspirante aspirante);
 } 

@@ -419,8 +419,14 @@
         async function loadEstadisticas() {
             try {
                 showLoading();
-                const aspiranteId = getAspiranteId();
-                const response = await fetch(`/api/aspirante/${aspiranteId}/estadisticas`);
+                const currentAspiranteId = getAspiranteId();
+                if (!currentAspiranteId) {
+                    currentAspiranteId = await loadAspiranteProfile();
+                    if (!currentAspiranteId) {
+                        throw new Error('No se pudo obtener el ID del aspirante');
+                    }
+                }
+                const response = await fetch(`/api/aspirante/${currentAspiranteId}/estadisticas`);
                 if (!response.ok) {
                     throw new Error('Error al cargar estadísticas');
                 }

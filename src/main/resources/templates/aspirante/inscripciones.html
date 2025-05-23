@@ -172,7 +172,7 @@
                         <h3 class="text-lg font-medium text-gray-900">
                             <i class="fas fa-clipboard-list mr-2 text-primary-600"></i>Mis Inscripciones
                         </h3>
-                        <div class="flex space-x-2">
+                        <div class="flex space-x-2" id="badges-container">
                             <span class="badge bg-primary-100 text-primary-800">
                                 <i class="fas fa-check-circle mr-1"></i>
                                 <span id="inscripciones-aprobadas">0</span> Aprobadas
@@ -267,21 +267,6 @@
                 document.getElementById('total-pendientes').textContent = data.totalPendientes || 0;
                 document.getElementById('inscripciones-aprobadas').textContent = data.totalAprobadas || 0;
                 document.getElementById('inscripciones-pendientes').textContent = data.totalPendientes || 0;
-
-                // Actualizar badges
-                const badgesContainer = document.querySelector('.flex.space-x-2');
-                if (badgesContainer) {
-                    badgesContainer.innerHTML = `
-                        <span class="badge bg-primary-100 text-primary-800">
-                            <i class="fas fa-check-circle mr-1"></i>
-                            <span id="inscripciones-aprobadas">${data.totalAprobadas || 0}</span> Aprobadas
-                        </span>
-                        <span class="badge bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-clock mr-1"></i>
-                            <span id="inscripciones-pendientes">${data.totalPendientes || 0}</span> Pendientes
-                        </span>
-                    `;
-                }
             } catch (error) {
                 console.error('Error al cargar estadísticas:', error);
                 showAlert('Error al cargar estadísticas', 'error');

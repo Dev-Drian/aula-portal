@@ -7,6 +7,7 @@ import com.example.demo.service.AspiranteService;
 import com.example.demo.service.UsuarioService;
 import com.example.demo.service.OportunidadService;
 import com.example.demo.service.OportunidadGuardadaService;
+import com.example.demo.service.InscripcionService;
 
 import java.util.List;
 import java.util.Map;
@@ -23,17 +24,20 @@ public class AspiranteController {
     private final UsuarioService usuarioService;
     private final OportunidadService oportunidadService;
     private final OportunidadGuardadaService oportunidadGuardadaService;
+    private final InscripcionService inscripcionService;
 
     public AspiranteController(
         AspiranteService aspiranteService, 
         UsuarioService usuarioService,
         OportunidadService oportunidadService,
-        OportunidadGuardadaService oportunidadGuardadaService
+        OportunidadGuardadaService oportunidadGuardadaService,
+        InscripcionService inscripcionService
     ) {
         this.aspiranteService = aspiranteService;
         this.usuarioService = usuarioService;
         this.oportunidadService = oportunidadService;
         this.oportunidadGuardadaService = oportunidadGuardadaService;
+        this.inscripcionService = inscripcionService;
     }
 
     @GetMapping
@@ -190,5 +194,22 @@ public class AspiranteController {
 
         oportunidadGuardadaService.eliminarOportunidadGuardada(aspirante, oportunidad);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{aspiranteId}/estadisticas")
+    public ResponseEntity<Map<String, Long>> getEstadisticas(@PathVariable Long aspiranteId) {
+        Aspirante aspirante = aspiranteService.getAspiranteById(aspiranteId);
+        if (aspirante == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, Long> estadisticas = Map.of(
+            "totalInscripciones", inscripcionService.countInscripcionesByAspirante(aspirante),
+            "totalAprobadas", inscripcionService.countInscripcionesByAspiranteAndEstado(aspirante, "APROBADA"),
+            "totalPendientes", inscripcionService.countInscripcionesByAspiranteAndEstado(aspirante, "PENDIENTE"),
+            "totalGuardadas", oportunidadGuardadaService.countOportunidadesGuardadasByAspirante(aspirante)
+        );
+
+        return ResponseEntity.ok(estadisticas);
     }
 }
