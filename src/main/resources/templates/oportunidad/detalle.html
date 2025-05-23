@@ -177,7 +177,7 @@
             async function loadAspirantes() {
                 try {
                     const oportunidadId = window.location.pathname.split('/').pop();
-                    const response = await fetch(`/api/oportunidad/${oportunidadId}/aspirantes`);
+                    const response = await fetch(`/api/oportunidades/${oportunidadId}/aspirantes`);
                     if (!response.ok) throw new Error('Error al cargar aspirantes');
                     
                     const aspirantes = await response.json();

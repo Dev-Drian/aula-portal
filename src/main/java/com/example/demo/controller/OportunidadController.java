@@ -2,13 +2,17 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Oportunidad;
 import com.example.demo.entity.Aspirante;
+import com.example.demo.entity.Inscripcion;
 import com.example.demo.service.OportunidadService;
 import com.example.demo.service.AspiranteService;
+import com.example.demo.service.InscripcionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/oportunidades")
@@ -20,6 +24,9 @@ public class OportunidadController {
 
     @Autowired
     private AspiranteService aspiranteService;
+
+    @Autowired
+    private InscripcionService inscripcionService;
 
     @GetMapping
     public List<Oportunidad> getAllOportunidades() {
@@ -70,6 +77,27 @@ public class OportunidadController {
         Aspirante aspirante = aspiranteService.getAspiranteById(aspiranteId);
         if (aspirante != null) {
             return ResponseEntity.ok(oportunidadService.getOportunidadesDisponiblesParaAspirante(aspirante));
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{id}/aspirantes")
+    public ResponseEntity<List<Map<String, Object>>> getAspirantesByOportunidad(@PathVariable Long id) {
+        Oportunidad oportunidad = oportunidadService.getOportunidadById(id);
+        if (oportunidad != null) {
+            List<Inscripcion> inscripciones = inscripcionService.getInscripcionesByOportunidad(oportunidad);
+            List<Map<String, Object>> aspirantes = inscripciones.stream()
+                .map(inscripcion -> {
+                    Map<String, Object> aspiranteMap = new HashMap<>();
+                    aspiranteMap.put("id", inscripcion.getAspirante().getId());
+                    aspiranteMap.put("nombre", inscripcion.getAspirante().getNombre());
+                    aspiranteMap.put("email", inscripcion.getAspirante().getEmail());
+                    aspiranteMap.put("estado", inscripcion.getEstado());
+                    aspiranteMap.put("fechaInscripcion", inscripcion.getFechaInscripcion());
+                    return aspiranteMap;
+                })
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(aspirantes);
         }
         return ResponseEntity.notFound().build();
     }
