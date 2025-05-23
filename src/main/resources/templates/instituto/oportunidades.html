@@ -326,7 +326,7 @@
             try {
                 showLoading();
                 const userId = localStorage.getItem('userId');
-                const response = await fetch(`/instituto/api/perfil?userId=${userId}`);
+                const response = await fetch(`/api/instituto/perfil?userId=${userId}`);
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('user-name').textContent = data.nombreInstitucion || 'Instituto';
@@ -346,11 +346,11 @@
             try {
                 showLoading();
                 const userId = localStorage.getItem('userId');
-                const response = await fetch(`/instituto/api/perfil?userId=${userId}`);
+                const response = await fetch(`/api/instituto/perfil?userId=${userId}`);
                 if (!response.ok) throw new Error('Error al obtener datos del instituto');
                 
                 const instituto = await response.json();
-                const oportunidadesResponse = await fetch(`/instituto/api/oportunidades?institutoId=${instituto.id}`);
+                const oportunidadesResponse = await fetch(`/api/instituto/oportunidades?institutoId=${instituto.id}`);
                 if (!oportunidadesResponse.ok) throw new Error('Error al cargar oportunidades');
                 
                 const oportunidades = await oportunidadesResponse.json();
@@ -442,7 +442,7 @@
 
             try {
                 showLoading();
-                const response = await fetch(`/instituto/api/oportunidades/${id}`, {
+                const response = await fetch(`/api/instituto/oportunidades/${id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -471,7 +471,7 @@
 
             try {
                 showLoading();
-                const response = await fetch(`/instituto/api/oportunidades/${id}`, {
+                const response = await fetch(`/api/instituto/oportunidades/${id}`, {
                     method: 'DELETE'
                 });
 

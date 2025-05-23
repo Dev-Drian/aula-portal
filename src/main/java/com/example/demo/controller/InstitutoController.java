@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -70,8 +71,23 @@ public class InstitutoController {
 
     @PostMapping("/oportunidades")
     @ResponseBody
-    public ResponseEntity<Oportunidad> crearOportunidad(@RequestBody Oportunidad oportunidad) {
+    public ResponseEntity<Oportunidad> crearOportunidad(@RequestBody Oportunidad oportunidad, @RequestParam Long userId) {
+        // Obtener el instituto asociado al usuario
+        Usuario usuario = usuarioRepository.findById(userId).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Instituto instituto = institutoService.createOrGetInstituto(usuario);
+        if (instituto == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Asignar el instituto y la fecha a la oportunidad
+        oportunidad.setInstituto(instituto);
+        oportunidad.setFecha(LocalDateTime.now());
         oportunidad.setEstado("PENDIENTE");
+        
         return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidad));
     }
 
