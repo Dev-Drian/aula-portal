@@ -235,6 +235,7 @@
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Editar Perfil</h3>
                 <form id="profile-form" class="space-y-4">
+                    <input type="hidden" id="instituto-id" name="instituto-id">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Nombre de la Institución</label>
                         <input type="text" id="nombre-institucion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
@@ -303,7 +304,7 @@
             try {
                 showLoading();
                 const userId = localStorage.getItem('userId');
-                const response = await fetch(`/instituto/api/perfil?userId=${userId}`);
+                const response = await fetch(`/api/instituto/perfil?userId=${userId}`);
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('user-name').textContent = data.nombreInstitucion || 'Instituto';
@@ -327,13 +328,15 @@
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = {
+                id: document.getElementById('instituto-id').value,
                 nombreInstitucion: document.getElementById('nombre-institucion').value,
                 sitioWeb: document.getElementById('sitio-web').value
             };
 
             try {
                 showLoading();
-                const response = await fetch('/instituto/api/perfil', {
+                const userId = localStorage.getItem('userId');
+                const response = await fetch(`/api/instituto/perfil?userId=${userId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -370,6 +373,11 @@
                     <p class="font-medium">${profile.sitioWeb || 'No especificado'}</p>
                 </div>
             `;
+
+            // Actualizar valores en el modal
+            document.getElementById('instituto-id').value = profile.id || '';
+            document.getElementById('nombre-institucion').value = profile.nombreInstitucion || '';
+            document.getElementById('sitio-web').value = profile.sitioWeb || '';
         }
 
         // Cargar estadísticas
@@ -377,7 +385,7 @@
             try {
                 showLoading();
                 const userId = localStorage.getItem('userId');
-                const response = await fetch(`/instituto/api/oportunidades?institutoId=${userId}`);
+                const response = await fetch(`/api/instituto/oportunidades?institutoId=${userId}`);
                 if (!response.ok) {
                     throw new Error('Error al cargar estadísticas');
                 }
@@ -403,7 +411,7 @@
             try {
                 showLoading();
                 const userId = localStorage.getItem('userId');
-                const response = await fetch(`/instituto/api/oportunidades?institutoId=${userId}`);
+                const response = await fetch(`/api/instituto/oportunidades?institutoId=${userId}`);
                 const data = await response.json();
                 
                 const latestList = document.getElementById('latest-opportunities');

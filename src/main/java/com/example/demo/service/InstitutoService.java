@@ -37,6 +37,21 @@ public class InstitutoService {
     }
 
     @Transactional
+    public Instituto createOrGetInstituto(Usuario usuario) {
+        if (usuario == null || !"INSTITUTO".equals(usuario.getRol())) {
+            return null;
+        }
+
+        Instituto instituto = institutoRepository.findByUsuario(usuario);
+        if (instituto == null) {
+            instituto = new Instituto();
+            instituto.setUsuario(usuario);
+            instituto = institutoRepository.save(instituto);
+        }
+        return instituto;
+    }
+
+    @Transactional
     public Instituto saveInstituto(Instituto instituto) {
         return institutoRepository.save(instituto);
     }

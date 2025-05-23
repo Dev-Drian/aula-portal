@@ -241,7 +241,7 @@
             try {
                 showLoading();
                 const userId = localStorage.getItem('userId');
-                const response = await fetch(`/instituto/api/perfil?userId=${userId}`);
+                const response = await fetch(`/api/instituto/perfil?userId=${userId}`);
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('user-name').textContent = data.nombreInstitucion || 'Instituto';
@@ -274,7 +274,7 @@
 
             try {
                 showLoading();
-                const response = await fetch('/instituto/api/oportunidades', {
+                const response = await fetch('/api/instituto/oportunidades', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

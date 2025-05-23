@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Instituto;
 import com.example.demo.entity.Oportunidad;
+import com.example.demo.entity.Usuario;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.InstitutoService;
 import com.example.demo.service.OportunidadService;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,12 @@ public class InstitutoController {
 
     private final InstitutoService institutoService;
     private final OportunidadService oportunidadService;
+    private final UsuarioRepository usuarioRepository;
 
-    public InstitutoController(InstitutoService institutoService, OportunidadService oportunidadService) {
+    public InstitutoController(InstitutoService institutoService, OportunidadService oportunidadService, UsuarioRepository usuarioRepository) {
         this.institutoService = institutoService;
         this.oportunidadService = oportunidadService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     
@@ -28,14 +32,34 @@ public class InstitutoController {
     @GetMapping("/perfil")
     @ResponseBody
     public ResponseEntity<Instituto> getPerfil(@RequestParam Long userId) {
-        Instituto instituto = institutoService.getInstitutoByUserId(userId);
+        Usuario usuario = usuarioRepository.findById(userId).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        Instituto instituto = institutoService.createOrGetInstituto(usuario);
         return instituto != null ? ResponseEntity.ok(instituto) : ResponseEntity.notFound().build();
     }
 
     @PutMapping("/perfil")
     @ResponseBody
-    public ResponseEntity<Instituto> actualizarPerfil(@RequestBody Instituto instituto) {
-        return ResponseEntity.ok(institutoService.saveInstituto(instituto));
+    public ResponseEntity<Instituto> actualizarPerfil(@RequestBody Instituto institutoActualizado, @RequestParam Long userId) {
+        Usuario usuario = usuarioRepository.findById(userId).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Instituto instituto = institutoService.createOrGetInstituto(usuario);
+        if (instituto == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Mantener el ID original
+        institutoActualizado.setId(instituto.getId());
+        // Mantener la relación con el usuario
+        institutoActualizado.setUsuario(usuario);
+        
+        Instituto institutoGuardado = institutoService.saveInstituto(institutoActualizado);
+        return ResponseEntity.ok(institutoGuardado);
     }
 
     @GetMapping("/oportunidades")

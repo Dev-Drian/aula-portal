@@ -136,7 +136,9 @@ async function handleLogin(event) {
         if (response.ok && data) {
             // Guardar datos del usuario en localStorage
             localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userId', data.id);
             localStorage.setItem('user', JSON.stringify({
+                id: data.id,
                 nombre: data.nombre,
                 email: data.email,
                 role: data.rol
@@ -234,7 +236,9 @@ async function handleRegister(event) {
         if (response.ok && data) {
             // Guardar datos del usuario en localStorage
             localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userId', data.id);
             localStorage.setItem('user', JSON.stringify({
+                id: data.id,
                 nombre: data.nombre,
                 email: data.email,
                 role: data.rol
@@ -306,6 +310,7 @@ function logout() {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('user');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     window.location.href = '/auth/login';
 }
 
