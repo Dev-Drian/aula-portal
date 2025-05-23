@@ -93,9 +93,19 @@ public class InstitutoController {
 
     @PutMapping("/oportunidades/{id}")
     @ResponseBody
-    public ResponseEntity<Oportunidad> actualizarOportunidad(@PathVariable Long id, @RequestBody Oportunidad oportunidad) {
-        oportunidad.setId(id);
-        return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidad));
+    public ResponseEntity<Oportunidad> actualizarOportunidad(@PathVariable Long id, @RequestBody Oportunidad oportunidadActualizada) {
+        Oportunidad oportunidadExistente = oportunidadService.getOportunidadById(id);
+        if (oportunidadExistente == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Mantener el instituto, fecha y estado original
+        oportunidadActualizada.setInstituto(oportunidadExistente.getInstituto());
+        oportunidadActualizada.setFecha(oportunidadExistente.getFecha());
+        oportunidadActualizada.setEstado(oportunidadExistente.getEstado());
+        oportunidadActualizada.setId(id);
+        
+        return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidadActualizada));
     }
 
     @DeleteMapping("/oportunidades/{id}")

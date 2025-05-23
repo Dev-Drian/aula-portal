@@ -1,7 +1,9 @@
 package com.example.demo.entity;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 public class Oportunidad {
@@ -16,6 +18,13 @@ public class Oportunidad {
     private String estado;
     private String shippingId;
     private LocalDateTime fecha;
+    private String requisitos;
+    private String monto;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fechaLimite;
+    
+    private String contacto;
     
     @ManyToOne
     @JoinColumn(name = "instituto_id")
@@ -58,6 +67,22 @@ public class Oportunidad {
         return instituto;
     }
     
+    public String getRequisitos() {
+        return requisitos;
+    }
+    
+    public String getMonto() {
+        return monto;
+    }
+    
+    public LocalDate getFechaLimite() {
+        return fechaLimite;
+    }
+    
+    public String getContacto() {
+        return contacto;
+    }
+    
     public void setId(Long id) {
         this.id = id;
     }
@@ -92,6 +117,22 @@ public class Oportunidad {
     
     public void setInstituto(Instituto instituto) {
         this.instituto = instituto;
+    }
+    
+    public void setRequisitos(String requisitos) {
+        this.requisitos = requisitos;
+    }
+    
+    public void setMonto(String monto) {
+        this.monto = monto;
+    }
+    
+    public void setFechaLimite(LocalDate fechaLimite) {
+        this.fechaLimite = fechaLimite;
+    }
+    
+    public void setContacto(String contacto) {
+        this.contacto = contacto;
     }
     
     public Oportunidad() {
