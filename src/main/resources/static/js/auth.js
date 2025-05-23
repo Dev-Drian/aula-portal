@@ -184,9 +184,10 @@ async function handleRegister(event) {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
+    const rol = document.getElementById('rol').value;
 
     // Validaciones
-    if (!nombre || !email || !password || !confirmPassword) {
+    if (!nombre || !email || !password || !confirmPassword || !rol) {
         showWarning('Por favor complete todos los campos');
         return;
     }
@@ -217,7 +218,7 @@ async function handleRegister(event) {
                 nombre: nombre,
                 email: email,
                 contrasena: password,
-                rol: 'ASPIRANTE'
+                rol: rol
             })
         });
 
@@ -242,9 +243,21 @@ async function handleRegister(event) {
             
             showSuccess('¡Registro exitoso! Bienvenido ' + data.nombre);
             
-            // Redirigir al dashboard de aspirante
+            // Redirigir según el rol del usuario
             setTimeout(() => {
-                window.location.replace('/aspirante/dashboard');
+                let redirectUrl = '/dashboard';
+                switch(data.rol) {
+                    case 'ADMIN':
+                        redirectUrl = '/admin/dashboard';
+                        break;
+                    case 'INSTITUTO':
+                        redirectUrl = '/instituto/dashboard';
+                        break;
+                    case 'ASPIRANTE':
+                        redirectUrl = '/aspirante/dashboard';
+                        break;
+                }
+                window.location.replace(redirectUrl);
             }, 2000);
         } else {
             if (response.status === 400) {
