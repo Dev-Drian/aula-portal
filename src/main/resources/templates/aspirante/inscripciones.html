@@ -229,7 +229,12 @@
         // Cargar perfil del aspirante
         async function loadAspiranteProfile() {
             try {
-                const response = await fetch('/api/aspirante/perfil');
+                const userId = localStorage.getItem('userId');
+                const response = await fetch('/api/aspirante/perfil', {
+                    headers: {
+                        'X-User-Id': userId
+                    }
+                });
                 if (response.ok) {
                     const data = await response.json();
                     currentAspiranteId = data.id;

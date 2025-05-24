@@ -112,9 +112,7 @@ public class AspiranteController {
     }
 
     @GetMapping("/perfil")
-    public ResponseEntity<Aspirante> getPerfil() {
-        
-        Long usuarioId = 1L;
+    public ResponseEntity<Aspirante> getPerfil(@RequestHeader("X-User-Id") Long usuarioId) {
         Usuario usuario = usuarioService.getUsuarioById(usuarioId);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
@@ -124,20 +122,19 @@ public class AspiranteController {
     }
 
     @PutMapping("/perfil")
-    public ResponseEntity<Aspirante> updatePerfil(@RequestBody Map<String, String> perfilData) {
-        
-        Long usuarioId = 1L;
+    public ResponseEntity<Aspirante> updatePerfil(
+        @RequestHeader("X-User-Id") Long usuarioId,
+        @RequestBody Map<String, String> perfilData
+    ) {
         Usuario usuario = usuarioService.getUsuarioById(usuarioId);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
 
-        
         Aspirante aspirante = aspiranteService.createOrGetAspirante(usuario);
         if (aspirante == null) {
             return ResponseEntity.badRequest().build();
         }
-        
         
         if (perfilData.containsKey("nivelAcademico")) {
             aspirante.setNivelAcademico(perfilData.get("nivelAcademico"));
@@ -145,7 +142,6 @@ public class AspiranteController {
         if (perfilData.containsKey("areaInteres")) {
             aspirante.setAreaInteres(perfilData.get("areaInteres"));
         }
-        
         
         Aspirante updatedAspirante = aspiranteService.saveAspirante(aspirante);
         return ResponseEntity.ok(updatedAspirante);

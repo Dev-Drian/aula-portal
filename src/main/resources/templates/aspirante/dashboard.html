@@ -329,14 +329,19 @@
         async function loadUserData() {
             try {
                 showLoading();
-                const response = await fetch('/api/aspirante/perfil');
+                const userId = localStorage.getItem('userId');
+                console.log(userId);
+                const response = await fetch('/api/aspirante/perfil', {
+                    headers: {
+                        'X-User-Id': userId
+                    }
+                });
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('user-name').textContent = data.nombre || 'Usuario';
                     updateProfileInfo(data);
 
                     // Verificar y crear aspirante si es necesario
-                    const userId = data.id;
                     const aspiranteResponse = await fetch(`/api/aspirante/usuario/${userId}`);
                     if (!aspiranteResponse.ok) {
                         // Si no existe el aspirante, crearlo
@@ -376,10 +381,12 @@
 
             try {
                 showLoading();
+                const userId = localStorage.getItem('userId');
                 const response = await fetch('/api/aspirante/perfil', {
                     method: 'PUT',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-User-Id': userId
                     },
                     body: JSON.stringify(formData)
                 });
@@ -419,7 +426,7 @@
         async function loadEstadisticas() {
             try {
                 showLoading();
-                const currentAspiranteId = getAspiranteId();
+                const currentAspiranteId = await getAspiranteId();
                 if (!currentAspiranteId) {
                     currentAspiranteId = await loadAspiranteProfile();
                     if (!currentAspiranteId) {
@@ -443,11 +450,35 @@
             }
         }
 
+        // Función auxiliar para obtener el ID del aspirante
+        async function getAspiranteId() {
+            try {
+                const userId = localStorage.getItem('userId');
+                const response = await fetch('/api/aspirante/perfil', {
+                    headers: {
+                        'X-User-Id': userId
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.id;
+                }
+                throw new Error('Error al obtener ID del aspirante');
+            } catch (error) {
+                console.error('Error al obtener ID del aspirante:', error);
+                showAlert('Error al obtener ID del aspirante', 'error');
+                return null;
+            }
+        }
+
         // Cargar oportunidades guardadas
         async function loadSavedOpportunities() {
             try {
                 showLoading();
-                const aspiranteId = getAspiranteId();
+                const aspiranteId = await getAspiranteId();
+                if (!aspiranteId) {
+                    throw new Error('No se pudo obtener el ID del aspirante');
+                }
                 const response = await fetch(`/api/aspirante/oportunidades/guardadas?aspiranteId=${aspiranteId}`);
                 const data = await response.json();
                 
@@ -477,19 +508,14 @@
                                     <p class="mt-1 text-sm text-gray-600 line-clamp-2">${opp.descripcion}</p>
                                     <div class="mt-3 flex flex-wrap items-center gap-2">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                                        <i class="fas fa-tag mr-1"></i>${opp.tipo}
-                                    </span>
+                                            <i class="fas fa-tag mr-1"></i>${opp.tipo}
+                                        </span>
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="far fa-calendar-alt mr-1"></i>${new Date(opp.fecha).toLocaleDateString()}
-                                    </span>
+                                            <i class="far fa-calendar-alt mr-1"></i>${new Date(opp.fecha).toLocaleDateString()}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
                                 <div class="ml-4 flex flex-col items-end space-y-2">
-                                    ${!opp.inscrito ? 
-                                        `<button onclick="applyOpportunity(${opp.id})" class="btn bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors text-sm">
-                                            <i class="fas fa-paper-plane mr-1"></i>Inscribirse
-                                        </button>` : ''
-                                    }
                                     ${!opp.inscrito ? 
                                         `<button onclick="removeSavedOpportunity(${opp.id})" class="btn text-red-600 hover:text-red-700 transition-colors text-sm">
                                             <i class="fas fa-trash mr-1"></i>Eliminar
@@ -516,7 +542,11 @@
             
             try {
                 showLoading();
-                const response = await fetch(`/api/aspirante/oportunidades/${id}/guardar`, {
+                const aspiranteId = await getAspiranteId();
+                if (!aspiranteId) {
+                    throw new Error('No se pudo obtener el ID del aspirante');
+                }
+                const response = await fetch(`/api/aspirante/oportunidades/${id}/guardar?aspiranteId=${aspiranteId}`, {
                     method: 'DELETE'
                 });
                 if (response.ok) {
@@ -537,7 +567,11 @@
         async function applyOpportunity(id) {
             try {
                 showLoading();
-                const response = await fetch(`/api/inscripciones/aspirante/${getAspiranteId()}/oportunidad/${id}`, {
+                const aspiranteId = await getAspiranteId();
+                if (!aspiranteId) {
+                    throw new Error('No se pudo obtener el ID del aspirante');
+                }
+                const response = await fetch(`/api/inscripciones/aspirante/${aspiranteId}/oportunidad/${id}`, {
                     method: 'POST'
                 });
                 if (response.ok) {
@@ -552,13 +586,6 @@
             } finally {
                 hideLoading();
             }
-        }
-
-        // Función auxiliar para obtener el ID del aspirante
-        function getAspiranteId() {
-            // TODO: Implementar lógica para obtener el ID del aspirante actual
-            // Por ahora retornamos un valor temporal
-            return 1;
         }
 
         // Inicialización
