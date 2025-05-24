@@ -68,5 +68,9 @@ public class AspiranteService {
     public List<Aspirante> getAllAspirantesOrdenadosPorNivelAcademico() {
         return aspiranteRepository.findAllByOrderByNivelAcademicoAsc();
     }
+
+    public long countTotalAspirantes() {
+        return aspiranteRepository.count();
+    }
 }
 

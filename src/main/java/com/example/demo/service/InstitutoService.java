@@ -60,4 +60,8 @@ public class InstitutoService {
     public void deleteInstituto(Long id) {
         institutoRepository.deleteById(id);
     }
+
+    public long countTotalInstitutos() {
+        return institutoRepository.count();
+    }
 }

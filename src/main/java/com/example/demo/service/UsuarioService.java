@@ -8,7 +8,7 @@ import java.util.List;
 @Service
 public class UsuarioService {
 
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public UsuarioService(UsuarioRepository usuarioRepository){
         this.usuarioRepository = usuarioRepository;
@@ -28,5 +28,9 @@ public class UsuarioService {
 
     public void deleteUsuario(Long id) {
         usuarioRepository.deleteById(id);
+    }
+
+    public long countTotalUsuarios() {
+        return usuarioRepository.count();
     }
 }

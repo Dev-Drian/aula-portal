@@ -86,4 +86,28 @@ public class OportunidadService {
             })
             .collect(Collectors.toList());
     }
+
+    public void aprobarOportunidad(Long id) {
+        Oportunidad oportunidad = getOportunidadById(id);
+        if (oportunidad != null) {
+            oportunidad.setEstado("APROBADA");
+            saveOportunidad(oportunidad);
+        }
+    }
+
+    public void rechazarOportunidad(Long id) {
+        Oportunidad oportunidad = getOportunidadById(id);
+        if (oportunidad != null) {
+            oportunidad.setEstado("RECHAZADA");
+            saveOportunidad(oportunidad);
+        }
+    }
+
+    public long countTotalOportunidades() {
+        return oportunidadRepository.count();
+    }
+
+    public long countOportunidadesPendientes() {
+        return oportunidadRepository.countByEstado("PENDIENTE");
+    }
 }

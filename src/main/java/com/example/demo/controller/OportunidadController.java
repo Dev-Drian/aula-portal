@@ -51,7 +51,7 @@ public class OportunidadController {
     public ResponseEntity<Oportunidad> updateOportunidad(@PathVariable Long id, @RequestBody Oportunidad oportunidad) {
         Oportunidad existingOportunidad = oportunidadService.getOportunidadById(id);
         if (existingOportunidad != null) {
-            oportunidad.setId(id);
+        oportunidad.setId(id);
             return ResponseEntity.ok(oportunidadService.saveOportunidad(oportunidad));
         }
         return ResponseEntity.notFound().build();
@@ -61,7 +61,7 @@ public class OportunidadController {
     public ResponseEntity<Void> deleteOportunidad(@PathVariable Long id) {
         Oportunidad oportunidad = oportunidadService.getOportunidadById(id);
         if (oportunidad != null) {
-            oportunidadService.deleteOportunidad(id);
+        oportunidadService.deleteOportunidad(id);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
@@ -90,8 +90,8 @@ public class OportunidadController {
                 .map(inscripcion -> {
                     Map<String, Object> aspiranteMap = new HashMap<>();
                     aspiranteMap.put("id", inscripcion.getAspirante().getId());
-                    aspiranteMap.put("nombre", inscripcion.getAspirante().getNombre());
-                    aspiranteMap.put("email", inscripcion.getAspirante().getEmail());
+                    aspiranteMap.put("nombre", inscripcion.getAspirante().getUsuario().getNombre());
+                    aspiranteMap.put("email", inscripcion.getAspirante().getUsuario().getEmail());
                     aspiranteMap.put("estado", inscripcion.getEstado());
                     aspiranteMap.put("fechaInscripcion", inscripcion.getFechaInscripcion());
                     return aspiranteMap;
