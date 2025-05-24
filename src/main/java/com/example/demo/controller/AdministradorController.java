@@ -2,13 +2,14 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Administrador;
 import com.example.demo.entity.Usuario;
+import com.example.demo.entity.Oportunidad;
 import com.example.demo.service.AdministradorService;
 import com.example.demo.service.UsuarioService;
+import com.example.demo.service.OportunidadService;
 
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -17,16 +18,12 @@ public class AdministradorController {
 
   private final AdministradorService administradorService;
   private final UsuarioService usuarioService;
+  private final OportunidadService oportunidadService;
 
-  public AdministradorController(AdministradorService administradorService, UsuarioService usuarioService) {
+  public AdministradorController(AdministradorService administradorService, UsuarioService usuarioService, OportunidadService oportunidadService) {
     this.administradorService = administradorService;
     this.usuarioService = usuarioService;
-  }
-
-  @GetMapping("/usuarios/{id}/editar")
-  public String editarUsuario(@PathVariable Long id, Model model) {
-    model.addAttribute("usuario", usuarioService.getUsuarioById(id));
-    return "admin/editar-usuario";
+    this.oportunidadService = oportunidadService;
   }
 
   @PostMapping("/usuarios/{id}/actualizar")
@@ -41,7 +38,6 @@ public class AdministradorController {
       usuario.setEmail(email);
       usuario.setRol(rol);
 
-      // Actualizar teléfono si es administrador
       if (rol.equals("ADMIN") && telefono != null) {
         Administrador admin = administradorService.getAdministradorByUsuarioId(id);
         if (admin == null) {
@@ -54,7 +50,6 @@ public class AdministradorController {
           administradorService.saveAdministrador(admin);
         }
       } else if (!rol.equals("ADMIN")) {
-        // Si el usuario ya no es administrador, eliminar el registro de administrador
         Administrador admin = administradorService.getAdministradorByUsuarioId(id);
         if (admin != null) {
           administradorService.deleteAdministrador(admin.getId());
@@ -66,16 +61,22 @@ public class AdministradorController {
     return "redirect:/admin/usuarios";
   }
 
-  @GetMapping("/usuarios")
-  public String listarUsuarios(Model model) {
-    model.addAttribute("usuarios", usuarioService.getAllUsuarios());
-    return "admin/usuarios";
-  }
-
   @GetMapping("/usuarios/{id}/eliminar")
   public String eliminarUsuario(@PathVariable Long id) {
     usuarioService.deleteUsuario(id);
     return "redirect:/admin/usuarios";
+  }
+
+  @GetMapping("/oportunidades/{id}/aprobar")
+  public String aprobarOportunidad(@PathVariable Long id) {
+    oportunidadService.aprobarOportunidad(id);
+    return "redirect:/admin/oportunidades";
+  }
+
+  @GetMapping("/oportunidades/{id}/rechazar")
+  public String rechazarOportunidad(@PathVariable Long id) {
+    oportunidadService.rechazarOportunidad(id);
+    return "redirect:/admin/oportunidades";
   }
 }
 

@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Oportunidad;
+import com.example.demo.entity.Usuario;
 import com.example.demo.service.OportunidadService;
 import com.example.demo.service.AdministradorService;
 import com.example.demo.service.UsuarioService;
@@ -11,30 +12,31 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import java.util.List;
 
 @Controller
 @RequestMapping("/")
 public class LandingController {
 
-  private final OportunidadService oportunidadService;
-  private final AdministradorService administradorService;
-  private final UsuarioService usuarioService;
-  private final AspiranteService aspiranteService;
-  private final InstitutoService institutoService;
+    private final OportunidadService oportunidadService;
+    private final AdministradorService administradorService;
+    private final UsuarioService usuarioService;
+    private final AspiranteService aspiranteService;
+    private final InstitutoService institutoService;
 
-  public LandingController(OportunidadService oportunidadService,
-                         AdministradorService administradorService,
-                         UsuarioService usuarioService,
-                         AspiranteService aspiranteService,
-                         InstitutoService institutoService) {
-    this.oportunidadService = oportunidadService;
-    this.administradorService = administradorService;
-    this.usuarioService = usuarioService;
-    this.aspiranteService = aspiranteService;
-    this.institutoService = institutoService;
-  }
+    public LandingController(OportunidadService oportunidadService,
+                           AdministradorService administradorService,
+                           UsuarioService usuarioService,
+                           AspiranteService aspiranteService,
+                           InstitutoService institutoService) {
+        this.oportunidadService = oportunidadService;
+        this.administradorService = administradorService;
+        this.usuarioService = usuarioService;
+        this.aspiranteService = aspiranteService;
+        this.institutoService = institutoService;
+    }
 
-  @GetMapping
+    @GetMapping
     public String landing() {
         return "landing";
     }
@@ -60,22 +62,29 @@ public class LandingController {
         return "admin/dashboard";
     }
 
+    @GetMapping("/admin/usuarios")
+    public String listarUsuarios(Model model) {
+        try {
+            List<Usuario> usuarios = usuarioService.getAllUsuarios();
+            model.addAttribute("usuarios", usuarios);
+            return "admin/usuarios";
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Error al cargar los usuarios: " + e.getMessage());
+            return "error";
+        }
+    }
+
+    @GetMapping("/admin/usuarios/{id}/editar")
+    public String editarUsuario(@PathVariable Long id, Model model) {
+        model.addAttribute("usuario", usuarioService.getUsuarioById(id));
+        return "admin/editar-usuario";
+    }
+
     @GetMapping("/admin/oportunidades")
     public String gestionOportunidades(Model model) {
         model.addAttribute("oportunidades", oportunidadService.getAllOportunidades());
         return "admin/oportunidades";
-    }
-
-    @GetMapping("/admin/oportunidades/{id}/aprobar")
-    public String aprobarOportunidad(@PathVariable Long id) {
-        oportunidadService.aprobarOportunidad(id);
-        return "redirect:/admin/oportunidades";
-    }
-
-    @GetMapping("/admin/oportunidades/{id}/rechazar")
-    public String rechazarOportunidad(@PathVariable Long id) {
-        oportunidadService.rechazarOportunidad(id);
-        return "redirect:/admin/oportunidades";
     }
 
     @GetMapping("/instituto/dashboard")

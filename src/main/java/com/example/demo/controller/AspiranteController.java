@@ -113,8 +113,8 @@ public class AspiranteController {
 
     @GetMapping("/perfil")
     public ResponseEntity<Aspirante> getPerfil() {
-        // TODO: Obtener el ID del usuario autenticado
-        Long usuarioId = 1L; // Temporalmente hardcodeado
+        
+        Long usuarioId = 1L;
         Usuario usuario = usuarioService.getUsuarioById(usuarioId);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
@@ -125,20 +125,20 @@ public class AspiranteController {
 
     @PutMapping("/perfil")
     public ResponseEntity<Aspirante> updatePerfil(@RequestBody Map<String, String> perfilData) {
-        // TODO: Obtener el ID del usuario autenticado
-        Long usuarioId = 1L; // Temporalmente hardcodeado
+        
+        Long usuarioId = 1L;
         Usuario usuario = usuarioService.getUsuarioById(usuarioId);
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // Obtener o crear el aspirante
+        
         Aspirante aspirante = aspiranteService.createOrGetAspirante(usuario);
         if (aspirante == null) {
             return ResponseEntity.badRequest().build();
         }
         
-        // Actualizar los campos
+        
         if (perfilData.containsKey("nivelAcademico")) {
             aspirante.setNivelAcademico(perfilData.get("nivelAcademico"));
         }
@@ -146,7 +146,7 @@ public class AspiranteController {
             aspirante.setAreaInteres(perfilData.get("areaInteres"));
         }
         
-        // Guardar los cambios
+        
         Aspirante updatedAspirante = aspiranteService.saveAspirante(aspirante);
         return ResponseEntity.ok(updatedAspirante);
     }
