@@ -60,12 +60,6 @@ public class LandingController {
         return "admin/dashboard";
     }
 
-    @GetMapping("/admin/usuarios")
-    public String gestionUsuarios(Model model) {
-        model.addAttribute("usuarios", usuarioService.getAllUsuarios());
-        return "admin/usuarios";
-    }
-
     @GetMapping("/admin/oportunidades")
     public String gestionOportunidades(Model model) {
         model.addAttribute("oportunidades", oportunidadService.getAllOportunidades());
@@ -82,18 +76,6 @@ public class LandingController {
     public String rechazarOportunidad(@PathVariable Long id) {
         oportunidadService.rechazarOportunidad(id);
         return "redirect:/admin/oportunidades";
-    }
-
-    @GetMapping("/admin/usuarios/{id}/editar")
-    public String editarUsuario(@PathVariable Long id, Model model) {
-        model.addAttribute("usuario", usuarioService.getUsuarioById(id));
-        return "admin/editar-usuario";
-    }
-
-    @GetMapping("/admin/usuarios/{id}/eliminar")
-    public String eliminarUsuario(@PathVariable Long id) {
-        usuarioService.deleteUsuario(id);
-        return "redirect:/admin/usuarios";
     }
 
     @GetMapping("/instituto/dashboard")

@@ -23,6 +23,10 @@ public class AdministradorService {
         return administradorRepository.findById(id).orElse(null);
     }
     
+    public Administrador getAdministradorByUsuarioId(Long usuarioId) {
+        return administradorRepository.findByUsuarioId(usuarioId);
+    }
+    
     public Administrador saveAdministrador(Administrador administrador) {
         return administradorRepository.save(administrador);
     }

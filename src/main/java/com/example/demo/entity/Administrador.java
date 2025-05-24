@@ -4,16 +4,13 @@ import jakarta.persistence.*;
 @Entity
 public class Administrador {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
-    
-    private String apellido;
-    
     private String telefono;
 
     public Long getId() {
@@ -32,16 +29,6 @@ public class Administrador {
         this.usuario = usuario;
     }
 
-
-    public String getApellido() {
-        return apellido;
-    }
-
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
-    }
-
-
     public String getTelefono() {
         return telefono;
     }
@@ -50,19 +37,18 @@ public class Administrador {
         this.telefono = telefono;
     }
 
-    public Administrador () {
+    public Administrador() {
     }
 
-    public Administrador (Long id) {
+    public Administrador(Long id) {
         this.id = id;
     }
 
     @Override
-    public String toString () {
+    public String toString() {
         return "Administrador{" +
-        "id=" + id +        
-        ", apellido='" + apellido + '\'' +
-        '}';
+                "id=" + id +
+                ", telefono='" + telefono + '\'' +
+                '}';
     }
-
 }

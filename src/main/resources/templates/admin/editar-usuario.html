@@ -84,6 +84,13 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                         </div>
 
+                        <!-- Teléfono (solo para administradores) -->
+                        <div th:if="${usuario.rol == 'ADMIN'}">
+                            <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                            <input type="tel" name="telefono" id="telefono" th:value="${usuario.administrador != null ? usuario.administrador.telefono : ''}"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                        </div>
+
                         <!-- Rol -->
                         <div>
                             <label for="rol" class="block text-sm font-medium text-gray-700">Rol</label>
