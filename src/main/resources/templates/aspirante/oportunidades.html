@@ -166,15 +166,16 @@
                         </div>
                         <select id="filter-type" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                             <option value="all">Todas las oportunidades</option>
-                            <option value="becas">Becas</option>
-                            <option value="cursos">Cursos</option>
-                            <option value="patrocinios">Patrocinios</option>
+                            <option value="BECA">Becas</option>
+                            <option value="CONVOCATORIA">Convocatorias</option>
+                            <option value="EVENTO">Eventos</option>
+                            <option value="PROGRAMA">Programas</option>
                         </select>
                         <select id="filter-status" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                             <option value="all">Todos los estados</option>
-                            <option value="abierta">Abierta</option>
-                            <option value="proximamente">Próximamente</option>
-                            <option value="cerrada">Cerrada</option>
+                            <option value="ABIERTA">Abierta</option>
+                            <option value="PROXIMAMENTE">Próximamente</option>
+                            <option value="CERRADA">Cerrada</option>
                         </select>
                         <select id="filter-area" class="input-focus rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
                             <option value="all">Todas las áreas</option>
@@ -277,6 +278,12 @@
                     }
                 }
 
+                // Obtener valores de los filtros
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                const filterType = document.getElementById('filter-type').value;
+                const filterStatus = document.getElementById('filter-status').value;
+                const filterArea = document.getElementById('filter-area').value;
+
                 // Obtener oportunidades disponibles para el aspirante
                 const response = await fetch(`/api/oportunidades/disponibles/${currentAspiranteId}`);
                 const data = await response.json();
@@ -286,10 +293,30 @@
                 const savedData = await savedResponse.json();
                 const savedIds = new Set(savedData.map(opp => opp.id));
                 
-                document.getElementById('total-resultados').textContent = data.length;
+                // Aplicar filtros
+                const filteredData = data.filter(opp => {
+                    const matchesSearch = opp.titulo.toLowerCase().includes(searchTerm) || 
+                                        opp.descripcion.toLowerCase().includes(searchTerm);
+                    const matchesType = filterType === 'all' || opp.tipo === filterType;
+                    const matchesStatus = filterStatus === 'all' || opp.estado === filterStatus;
+                    const matchesArea = filterArea === 'all' || opp.area.toLowerCase() === filterArea.toLowerCase();
+                    
+                    return matchesSearch && matchesType && matchesStatus && matchesArea;
+                });
+                
+                document.getElementById('total-resultados').textContent = filteredData.length;
                 
                 const opportunitiesList = document.getElementById('opportunities-list');
-                opportunitiesList.innerHTML = data.map(opp => `
+                if (filteredData.length === 0) {
+                    opportunitiesList.innerHTML = `
+                        <div class="text-center text-gray-500 py-4">
+                            No se encontraron oportunidades que coincidan con los filtros
+                        </div>
+                    `;
+                    return;
+                }
+
+                opportunitiesList.innerHTML = filteredData.map(opp => `
                     <div class="card border rounded-lg p-4">
                         <div class="flex justify-between items-start">
                             <div class="flex-1">

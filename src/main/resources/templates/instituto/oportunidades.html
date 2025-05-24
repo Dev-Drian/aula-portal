@@ -354,10 +354,36 @@
                 if (!oportunidadesResponse.ok) throw new Error('Error al cargar oportunidades');
                 
                 const oportunidades = await oportunidadesResponse.json();
+
+                // Obtener valores de los filtros
+                const filterTipo = document.getElementById('filtro-tipo').value;
+                const filterArea = document.getElementById('filtro-area').value;
+                const filterEstado = document.getElementById('filtro-estado').value;
+
+                // Aplicar filtros
+                const filteredOportunidades = oportunidades.filter(oportunidad => {
+                    const matchesTipo = !filterTipo || oportunidad.tipo === filterTipo;
+                    const matchesArea = !filterArea || oportunidad.area === filterArea;
+                    const matchesEstado = !filterEstado || oportunidad.estado === filterEstado;
+                    
+                    return matchesTipo && matchesArea && matchesEstado;
+                });
+
                 const tbody = document.getElementById('oportunidades-body');
                 tbody.innerHTML = '';
 
-                oportunidades.forEach(oportunidad => {
+                if (filteredOportunidades.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                No se encontraron oportunidades que coincidan con los filtros
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                filteredOportunidades.forEach(oportunidad => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">
